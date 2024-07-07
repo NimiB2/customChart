@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -16,8 +15,8 @@ import java.util.List;
 
 public class ChartView extends LinearLayout {
     private List<ChartRow> rows;
-    private boolean hasTitle = false;
-    private int maxColumns = 1;
+    private TextView titleView;
+    private int maxNumberWidth = 0;
 
     public ChartView(Context context) {
         super(context);
@@ -37,167 +36,110 @@ public class ChartView extends LinearLayout {
     private void init() {
         setOrientation(VERTICAL);
         rows = new ArrayList<>();
+        titleView = new TextView(getContext());
+        titleView.setGravity(Gravity.CENTER);
+        titleView.setTextSize(20); // Default title text size
+        addView(titleView);
+    }
+
+    public void setTitle(String title) {
+        titleView.setText(title);
+        titleView.setVisibility(View.VISIBLE);
+    }
+
+    public void removeTitle() {
+        titleView.setText("");
+        titleView.setVisibility(View.GONE);
+    }
+
+    public void setTitleTextColor(int color) {
+        titleView.setTextColor(color);
+    }
+
+    public void setTitleTextSize(float size) {
+        titleView.setTextSize(size);
+    }
+
+    public void setTitleTextBold(boolean bold) {
+        titleView.setTypeface(null, bold ? Typeface.BOLD : Typeface.NORMAL);
+    }
+
+    public void setTitleBackgroundColor(int color) {
+        titleView.setBackgroundColor(color);
     }
 
     public void addRow(ChartRow row) {
+        int rowNumber = rows.size() + 1;
+        row.addCell(0, new ChartCell(String.valueOf(rowNumber)));
         rows.add(row);
-        addView(createRowView(row, rows.size()));
-    }
-
-    public void addTitle(String title) {
-        maxColumns = getMaxColumns();
-        ChartRow titleRow = new ChartRow();
-        ChartCell titleCell = new ChartCell(title);
-        titleCell.setBold(true);
-        titleRow.addCell(titleCell);
-        for (int i = 1; i < maxColumns; i++) {
-            titleRow.addCell(new ChartCell(""));
-        }
-        rows.add(0, titleRow);
-        addView(createRowView(titleRow, 0), 0);
-        hasTitle = true;
+        addView(createRowView(row));
+        updateNumberColumnWidth();
     }
 
     public void removeRow(int index) {
         rows.remove(index);
-        removeViewAt(index);
+        removeViewAt(index + 1); // Adjust for the title row
+        updateNumberColumnWidth();
     }
 
     public void updateRow(int index, ChartRow newRow) {
+        newRow.addCell(0, new ChartCell(String.valueOf(index + 1))); // Ensure the row number is set
         rows.set(index, newRow);
-        removeViewAt(index);
-        addView(createRowView(newRow, index), index);
+        removeViewAt(index + 1); // Adjust for the title row
+        addView(createRowView(newRow), index + 1);
+        updateNumberColumnWidth();
     }
 
-    private LinearLayout createRowView(ChartRow row, int rowIndex) {
+    private LinearLayout createRowView(ChartRow row) {
         LinearLayout rowView = new LinearLayout(getContext());
         rowView.setOrientation(HORIZONTAL);
-        maxColumns = getMaxColumns();
-
-        if (rowIndex > 0 && !hasTitle) {
-            addAutomaticNumbering(row, rowIndex);
-        }
-
         for (int i = 0; i < row.getCells().size(); i++) {
             TextView cellView = new TextView(getContext());
-            ChartCell cell = row.getCells().get(i);
-            cellView.setText(cell.getData());
-            cellView.setTextColor(cell.getTextColor());
-            if (cell.isBold()) {
-                cellView.setTypeface(null, Typeface.BOLD);
+            cellView.setText(row.getCells().get(i).getData());
+            if (i == 0) {
+                cellView.setWidth(maxNumberWidth); // Set width for the numbering column
             }
-            cellView.setGravity(Gravity.CENTER);
-            LayoutParams params = new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1);
-            cellView.setLayoutParams(params);
-            rowView.addView(cellView);
-        }
-        for (int i = row.getCells().size(); i < maxColumns; i++) {
-            TextView cellView = new TextView(getContext());
-            cellView.setText("");
-            LayoutParams params = new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1);
-            cellView.setLayoutParams(params);
             rowView.addView(cellView);
         }
         return rowView;
     }
 
-    private int getMaxColumns() {
-        int maxColumns = 1; // Default for title
+    private void updateNumberColumnWidth() {
+        int maxWidth = 0;
         for (ChartRow row : rows) {
-            if (row.getCells().size() > maxColumns) {
-                maxColumns = row.getCells().size();
+            TextView tempView = new TextView(getContext());
+            tempView.setText(row.getCells().get(0).getData());
+            tempView.measure(0, 0);
+            int width = tempView.getMeasuredWidth();
+            if (width > maxWidth) {
+                maxWidth = width;
             }
         }
-        return maxColumns;
-    }
+        maxNumberWidth = maxWidth;
 
-    private void addAutomaticNumbering(ChartRow row, int rowIndex) {
-        ChartCell numberCell = new ChartCell(String.valueOf(rowIndex));
-        row.addCell(0, numberCell);
+        for (int i = 1; i <= rows.size(); i++) { // Skip the title row
+            LinearLayout rowView = (LinearLayout) getChildAt(i);
+            TextView numberCell = (TextView) rowView.getChildAt(0);
+            numberCell.setWidth(maxNumberWidth);
+        }
     }
 
     public void setRowColor(int rowIndex, int color) {
-        LinearLayout rowView = (LinearLayout) getChildAt(rowIndex);
+        LinearLayout rowView = (LinearLayout) getChildAt(rowIndex + 1); // Adjust for the title row
         rowView.setBackgroundColor(color);
     }
 
     public void setCellColor(int rowIndex, int cellIndex, int color) {
-        LinearLayout rowView = (LinearLayout) getChildAt(rowIndex);
+        LinearLayout rowView = (LinearLayout) getChildAt(rowIndex + 1); // Adjust for the title row
         TextView cellView = (TextView) rowView.getChildAt(cellIndex);
         cellView.setBackgroundColor(color);
     }
 
     public void setRowTextSize(int rowIndex, float size) {
-        LinearLayout rowView = (LinearLayout) getChildAt(rowIndex);
+        LinearLayout rowView = (LinearLayout) getChildAt(rowIndex + 1); // Adjust for the title row
         for (int i = 0; i < rowView.getChildCount(); i++) {
             TextView cellView = (TextView) rowView.getChildAt(i);
             cellView.setTextSize(size);
-        }
-    }
-
-    public void setTableColor(int color) {
-        for (int i = 0; i < getChildCount(); i++) {
-            LinearLayout rowView = (LinearLayout) getChildAt(i);
-            for (int j = 0; j < rowView.getChildCount(); j++) {
-                TextView cellView = (TextView) rowView.getChildAt(j);
-                cellView.setBackgroundColor(color);
-            }
-        }
-    }
-
-    public void setFirstRowColor(int color) {
-        setRowColor(1, color); // Skip the title row
-    }
-
-    public void setFirstColumnColor(int color) {
-        for (int i = 1; i < getChildCount(); i++) { // Skip the title row
-            LinearLayout rowView = (LinearLayout) getChildAt(i);
-            rowView.getChildAt(0).setBackgroundColor(color);
-        }
-    }
-
-    public void setCellTextColor(int rowIndex, int cellIndex, int color) {
-        LinearLayout rowView = (LinearLayout) getChildAt(rowIndex);
-        TextView cellView = (TextView) rowView.getChildAt(cellIndex);
-        cellView.setTextColor(color);
-    }
-
-    public void setSeparationLines(int color, boolean horizontal, boolean vertical) {
-        for (int i = 0; i < getChildCount(); i++) {
-            LinearLayout rowView = (LinearLayout) getChildAt(i);
-            for (int j = 0; j < rowView.getChildCount(); j++) {
-                TextView cellView = (TextView) rowView.getChildAt(j);
-                cellView.setBackgroundColor(Color.TRANSPARENT); // Ensure the background is transparent first
-                if (horizontal) {
-                    cellView.setPadding(0, 2, 0, 2);
-                    cellView.setBackground(new ColorDrawable(color)); // Set border color
-                }
-                if (vertical) {
-                    cellView.setPadding(2, 0, 2, 0);
-                    cellView.setBackground(new ColorDrawable(color)); // Set border color
-                }
-            }
-        }
-    }
-
-    public void alignCells() {
-        int maxWidth = 0;
-        for (int i = 0; i < getChildCount(); i++) {
-            LinearLayout rowView = (LinearLayout) getChildAt(i);
-            for (int j = 0; j < rowView.getChildCount(); j++) {
-                TextView cellView = (TextView) rowView.getChildAt(j);
-                cellView.measure(0, 0);
-                if (cellView.getMeasuredWidth() > maxWidth) {
-                    maxWidth = cellView.getMeasuredWidth();
-                }
-            }
-        }
-        for (int i = 0; i < getChildCount(); i++) {
-            LinearLayout rowView = (LinearLayout) getChildAt(i);
-            for (int j = 0; j < rowView.getChildCount(); j++) {
-                TextView cellView = (TextView) rowView.getChildAt(j);
-                cellView.setWidth(maxWidth);
-            }
         }
     }
 }
