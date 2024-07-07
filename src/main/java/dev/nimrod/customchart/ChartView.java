@@ -3,6 +3,7 @@ package dev.nimrod.customchart;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -16,6 +17,7 @@ import java.util.List;
 public class ChartView extends LinearLayout {
     private List<ChartRow> rows;
     private boolean hasTitle = false;
+    private int maxColumns = 1;
 
     public ChartView(Context context) {
         super(context);
@@ -43,7 +45,7 @@ public class ChartView extends LinearLayout {
     }
 
     public void addTitle(String title) {
-        int maxColumns = getMaxColumns();
+        maxColumns = getMaxColumns();
         ChartRow titleRow = new ChartRow();
         ChartCell titleCell = new ChartCell(title);
         titleCell.setBold(true);
@@ -70,7 +72,12 @@ public class ChartView extends LinearLayout {
     private LinearLayout createRowView(ChartRow row, int rowIndex) {
         LinearLayout rowView = new LinearLayout(getContext());
         rowView.setOrientation(HORIZONTAL);
-        int maxColumns = getMaxColumns();
+        maxColumns = getMaxColumns();
+
+        if (rowIndex > 0 && !hasTitle) {
+            addAutomaticNumbering(row, rowIndex);
+        }
+
         for (int i = 0; i < row.getCells().size(); i++) {
             TextView cellView = new TextView(getContext());
             ChartCell cell = row.getCells().get(i);
@@ -91,9 +98,6 @@ public class ChartView extends LinearLayout {
             cellView.setLayoutParams(params);
             rowView.addView(cellView);
         }
-        if (rowIndex > 0 && !hasTitle) {
-            addAutomaticNumbering(rowView, rowIndex);
-        }
         return rowView;
     }
 
@@ -107,13 +111,9 @@ public class ChartView extends LinearLayout {
         return maxColumns;
     }
 
-    private void addAutomaticNumbering(LinearLayout rowView, int rowIndex) {
-        TextView numberView = new TextView(getContext());
-        numberView.setText(String.valueOf(rowIndex));
-        numberView.setGravity(Gravity.CENTER);
-        LayoutParams params = new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1);
-        numberView.setLayoutParams(params);
-        rowView.addView(numberView, 0);
+    private void addAutomaticNumbering(ChartRow row, int rowIndex) {
+        ChartCell numberCell = new ChartCell(String.valueOf(rowIndex));
+        row.addCell(0, numberCell);
     }
 
     public void setRowColor(int rowIndex, int color) {
@@ -137,7 +137,11 @@ public class ChartView extends LinearLayout {
 
     public void setTableColor(int color) {
         for (int i = 0; i < getChildCount(); i++) {
-            getChildAt(i).setBackgroundColor(color);
+            LinearLayout rowView = (LinearLayout) getChildAt(i);
+            for (int j = 0; j < rowView.getChildCount(); j++) {
+                TextView cellView = (TextView) rowView.getChildAt(j);
+                cellView.setBackgroundColor(color);
+            }
         }
     }
 
@@ -158,13 +162,41 @@ public class ChartView extends LinearLayout {
         cellView.setTextColor(color);
     }
 
-    public void setSeparationLines(int color) {
+    public void setSeparationLines(int color, boolean horizontal, boolean vertical) {
         for (int i = 0; i < getChildCount(); i++) {
             LinearLayout rowView = (LinearLayout) getChildAt(i);
             for (int j = 0; j < rowView.getChildCount(); j++) {
                 TextView cellView = (TextView) rowView.getChildAt(j);
-                cellView.setPadding(2, 2, 2, 2);
-                cellView.setBackgroundColor(color);
+                cellView.setBackgroundColor(Color.TRANSPARENT); // Ensure the background is transparent first
+                if (horizontal) {
+                    cellView.setPadding(0, 2, 0, 2);
+                    cellView.setBackground(new ColorDrawable(color)); // Set border color
+                }
+                if (vertical) {
+                    cellView.setPadding(2, 0, 2, 0);
+                    cellView.setBackground(new ColorDrawable(color)); // Set border color
+                }
+            }
+        }
+    }
+
+    public void alignCells() {
+        int maxWidth = 0;
+        for (int i = 0; i < getChildCount(); i++) {
+            LinearLayout rowView = (LinearLayout) getChildAt(i);
+            for (int j = 0; j < rowView.getChildCount(); j++) {
+                TextView cellView = (TextView) rowView.getChildAt(j);
+                cellView.measure(0, 0);
+                if (cellView.getMeasuredWidth() > maxWidth) {
+                    maxWidth = cellView.getMeasuredWidth();
+                }
+            }
+        }
+        for (int i = 0; i < getChildCount(); i++) {
+            LinearLayout rowView = (LinearLayout) getChildAt(i);
+            for (int j = 0; j < rowView.getChildCount(); j++) {
+                TextView cellView = (TextView) rowView.getChildAt(j);
+                cellView.setWidth(maxWidth);
             }
         }
     }

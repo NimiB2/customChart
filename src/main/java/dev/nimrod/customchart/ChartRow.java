@@ -18,6 +18,10 @@ public class ChartRow {
         cells.add(cell);
     }
 
+    public void addCell(int index, ChartCell cell) {
+        cells.add(index, cell);
+    }
+
     public void removeCell(int index) {
         cells.remove(index);
     }
