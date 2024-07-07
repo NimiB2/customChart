@@ -17,6 +17,7 @@ public class ChartView extends LinearLayout {
     private List<ChartRow> rows;
     private TextView titleView;
     private int maxNumberWidth = 0;
+    private boolean isNumberingEnabled = true;
 
     public ChartView(Context context) {
         super(context);
@@ -69,8 +70,10 @@ public class ChartView extends LinearLayout {
     }
 
     public void addRow(ChartRow row) {
-        int rowNumber = rows.size() + 1;
-        row.addCell(0, new ChartCell(String.valueOf(rowNumber)));
+        if (isNumberingEnabled) {
+            int rowNumber = rows.size() + 1;
+            row.addCell(0, new ChartCell(String.valueOf(rowNumber)));
+        }
         rows.add(row);
         addView(createRowView(row));
         updateNumberColumnWidth();
@@ -83,7 +86,11 @@ public class ChartView extends LinearLayout {
     }
 
     public void updateRow(int index, ChartRow newRow) {
-        newRow.addCell(0, new ChartCell(String.valueOf(index + 1))); // Ensure the row number is set
+        if (isNumberingEnabled) {
+            // Preserve the existing number if it has been manually set
+
+            String currentNumber = rows.get(index).getCells().get(0).getData();
+            newRow.getCells().set(0, new ChartCell(currentNumber));        }
         rows.set(index, newRow);
         removeViewAt(index + 1); // Adjust for the title row
         addView(createRowView(newRow), index + 1);
@@ -96,7 +103,7 @@ public class ChartView extends LinearLayout {
         for (int i = 0; i < row.getCells().size(); i++) {
             TextView cellView = new TextView(getContext());
             cellView.setText(row.getCells().get(i).getData());
-            if (i == 0) {
+            if (i == 0 && isNumberingEnabled) {
                 cellView.setWidth(maxNumberWidth); // Set width for the numbering column
             }
             rowView.addView(cellView);
@@ -105,6 +112,8 @@ public class ChartView extends LinearLayout {
     }
 
     private void updateNumberColumnWidth() {
+        if (!isNumberingEnabled) return;
+
         int maxWidth = 0;
         for (ChartRow row : rows) {
             TextView tempView = new TextView(getContext());
@@ -122,6 +131,38 @@ public class ChartView extends LinearLayout {
             TextView numberCell = (TextView) rowView.getChildAt(0);
             numberCell.setWidth(maxNumberWidth);
         }
+    }
+
+    public void setNumber(int rowIndex, String number) {
+        if (!isNumberingEnabled || rowIndex <= 0 || rowIndex > rows.size()) return;
+        ChartRow row = rows.get(rowIndex - 1);
+        row.getCells().get(0).setData(number);
+        updateRow(rowIndex - 1, row);
+    }
+
+    public void removeNumbering() {
+        isNumberingEnabled = false;
+        for (ChartRow row : rows) {
+            row.getCells().get(0).setData("");
+        }
+        updateAllRows();
+    }
+
+    public void addNumbering() {
+        isNumberingEnabled = true;
+        for (int i = 0; i < rows.size(); i++) {
+            rows.get(i).getCells().get(0).setData(String.valueOf(i + 1));
+        }
+        updateAllRows();
+    }
+
+    private void updateAllRows() {
+        removeAllViews();
+        addView(titleView);
+        for (int i = 0; i < rows.size(); i++) {
+            addView(createRowView(rows.get(i)));
+        }
+        updateNumberColumnWidth();
     }
 
     public void setRowColor(int rowIndex, int color) {
