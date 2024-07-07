@@ -17,7 +17,7 @@ public class ChartView extends LinearLayout {
     private List<ChartRow> rows;
     private TextView titleView;
     private int maxNumberWidth = 0;
-    private boolean isNumberingEnabled = true;
+    private boolean isNumberingEnabled = false;
 
     public ChartView(Context context) {
         super(context);
@@ -88,9 +88,9 @@ public class ChartView extends LinearLayout {
     public void updateRow(int index, ChartRow newRow) {
         if (isNumberingEnabled) {
             // Preserve the existing number if it has been manually set
-
             String currentNumber = rows.get(index).getCells().get(0).getData();
-            newRow.getCells().set(0, new ChartCell(currentNumber));        }
+            newRow.getCells().set(0, new ChartCell(currentNumber));
+        }
         rows.set(index, newRow);
         removeViewAt(index + 1); // Adjust for the title row
         addView(createRowView(newRow), index + 1);
@@ -107,6 +107,11 @@ public class ChartView extends LinearLayout {
                 cellView.setWidth(maxNumberWidth); // Set width for the numbering column
             }
             rowView.addView(cellView);
+            if (i == 0 && isNumberingEnabled) {
+                View space = new View(getContext());
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(16, LayoutParams.MATCH_PARENT);
+                rowView.addView(space, params); // Add space between numbering and other cells
+            }
         }
         return rowView;
     }
