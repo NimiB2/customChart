@@ -5,6 +5,7 @@ import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -12,7 +13,7 @@ import android.widget.TextView;
 
 import com.google.android.material.textview.MaterialTextView;
 
-public class CustomTableView extends LinearLayout {
+public class CustomTableView extends HorizontalScrollView {
     private boolean isRowNumberingEnabled = false;
     private TableLayout tableLayout;
     private MaterialTextView tableTitle;
@@ -54,6 +55,8 @@ public class CustomTableView extends LinearLayout {
             cell.setText(cellValue);
             cell.setPadding(8, 8, 8, 8);
             cell.setBackgroundResource(R.drawable.cell_border);
+            cell.setSingleLine(false);
+            cell.setEllipsize(null);
             row.addView(cell);
         }
         tableLayout.addView(row);
@@ -169,6 +172,8 @@ public class CustomTableView extends LinearLayout {
                 cell.setText(cellValue);
                 cell.setPadding(8, 8, 8, 8);
                 cell.setBackgroundResource(R.drawable.cell_border);
+                cell.setSingleLine(false);
+                cell.setEllipsize(null);
                 row.addView(cell);
             }
             tableLayout.addView(row, position);
@@ -187,6 +192,13 @@ public class CustomTableView extends LinearLayout {
         }
     }
 
+    public void removeCell(int row, int column) {
+        if (isValidPosition(row, column)) {
+            TableRow tableRow = (TableRow) tableLayout.getChildAt(row);
+            tableRow.removeViewAt(column);
+        }
+    }
+
     public void setCellText(int row, int column, String text) {
         if (isValidPosition(row, column)) {
             TableRow tableRow = (TableRow) tableLayout.getChildAt(row);
@@ -202,6 +214,8 @@ public class CustomTableView extends LinearLayout {
             cell.setText(cellValue);
             cell.setPadding(8, 8, 8, 8);
             cell.setBackgroundResource(R.drawable.cell_border);
+            cell.setSingleLine(false);
+            cell.setEllipsize(null);
             tableRow.addView(cell);
         }
     }
@@ -214,6 +228,8 @@ public class CustomTableView extends LinearLayout {
             headerCell.setPadding(8, 8, 8, 8);
             headerCell.setBackgroundResource(R.drawable.header_cell_border);
             headerCell.setTypeface(null, Typeface.BOLD);
+            headerCell.setSingleLine(false);
+            headerCell.setEllipsize(null);
             headerRow.addView(headerCell);
         }
         tableLayout.addView(headerRow, 0);
@@ -239,7 +255,9 @@ public class CustomTableView extends LinearLayout {
     }
 
     public void addColumn(String[] columnValues) {
-        if (columnValues.length != tableLayout.getChildCount()) return;
+        if (tableLayout.getChildCount() == 0 || columnValues.length != tableLayout.getChildCount()) {
+            throw new IllegalArgumentException("Column values size must match the number of rows.");
+        }
 
         for (int i = 0; i < tableLayout.getChildCount(); i++) {
             TableRow tableRow = (TableRow) tableLayout.getChildAt(i);
@@ -247,6 +265,8 @@ public class CustomTableView extends LinearLayout {
             cell.setText(columnValues[i]);
             cell.setPadding(8, 8, 8, 8);
             cell.setBackgroundResource(R.drawable.cell_border);
+            cell.setSingleLine(false);
+            cell.setEllipsize(null);
             tableRow.addView(cell);
         }
     }
@@ -260,13 +280,6 @@ public class CustomTableView extends LinearLayout {
         }
     }
 
-    public void setCellPadding(int row, int column, int left, int top, int right, int bottom) {
-        if (isValidPosition(row, column)) {
-            TableRow tableRow = (TableRow) tableLayout.getChildAt(row);
-            TextView cell = (TextView) tableRow.getChildAt(column);
-            cell.setPadding(left, top, right, bottom);
-        }
-    }
 
     private boolean isValidPosition(int row, int column) {
         return isValidRow(row) && isValidColumn(column, row);
