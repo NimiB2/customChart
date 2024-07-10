@@ -36,11 +36,19 @@ public class CustomTableView extends HorizontalScrollView {
         super(context, attrs, defStyleAttr);
         init(context);
     }
-
+    // שינוי
     private void init(Context context) {
         LayoutInflater.from(context).inflate(R.layout.table_view, this, true);
         tableLayout = findViewById(R.id.table_layout);
         tableTitle = findViewById(R.id.table_title);
+        // Add an empty header row
+        TableRow headerRow = new TableRow(getContext());
+        tableLayout.addView(headerRow, 0);
+
+        // Hide the header row if hasHeader is false
+        if (!hasHeader) {
+            headerRow.setVisibility(GONE);
+        }
     }
 
     public void setTitle(String title) {
@@ -63,7 +71,7 @@ public class CustomTableView extends HorizontalScrollView {
             cell.setEllipsize(null);
             row.addView(cell);
         }
-        tableLayout.addView(row);
+        tableLayout.addView(row, hasHeader ? tableLayout.getChildCount() : tableLayout.getChildCount());
     }
 
     public void showHorizontalLines() {
@@ -97,17 +105,17 @@ public class CustomTableView extends HorizontalScrollView {
     }
 
     private void updateRowNumbers() {
-        for (int i = 0; i < tableLayout.getChildCount(); i++) {
+        for (int i = hasHeader ? 1 : 0; i < tableLayout.getChildCount(); i++) {
             TableRow row = (TableRow) tableLayout.getChildAt(i);
             TextView numberCell = new TextView(getContext());
-            numberCell.setText(String.valueOf(i + 1));
+            numberCell.setText(String.valueOf(i - (hasHeader ? 1 : 0) + 1));
             numberCell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
             if (isRowNumberingEnabled) {
-                if (row.getChildCount() == 0 || !(row.getChildAt(0) instanceof TextView && ((TextView) row.getChildAt(0)).getText().toString().equals(String.valueOf(i + 1)))) {
+                if (row.getChildCount() == 0 || !(row.getChildAt(0) instanceof TextView && ((TextView) row.getChildAt(0)).getText().toString().equals(String.valueOf(i - (hasHeader ? 1 : 0) + 1)))) {
                     row.addView(numberCell, 0);
                 }
             } else {
-                if (row.getChildCount() > 0 && row.getChildAt(0) instanceof TextView && ((TextView) row.getChildAt(0)).getText().toString().equals(String.valueOf(i + 1))) {
+                if (row.getChildCount() > 0 && row.getChildAt(0) instanceof TextView && ((TextView) row.getChildAt(0)).getText().toString().equals(String.valueOf(i - (hasHeader ? 1 : 0) + 1))) {
                     row.removeViewAt(0);
                 }
             }
@@ -256,32 +264,19 @@ public class CustomTableView extends HorizontalScrollView {
 
     public void addHeaderRow(String[] headerValues) {
         hasHeader = true;
-        if (tableLayout.getChildCount() == 0) {
-            TableRow headerRow = new TableRow(getContext());
-            for (String headerValue : headerValues) {
-                TextView headerCell = new TextView(getContext());
-                headerCell.setText(headerValue);
-                headerCell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
-                headerCell.setBackgroundResource(R.drawable.header_cell_border);
-                headerCell.setTypeface(null, Typeface.BOLD);
-                headerCell.setSingleLine(false);
-                headerCell.setEllipsize(null);
-                headerRow.addView(headerCell);
-            }
-            tableLayout.addView(headerRow, 0);
-        } else {
-            TableRow headerRow = (TableRow) tableLayout.getChildAt(0);
-            for (int i = 0; i < headerValues.length; i++) {
-                TextView headerCell = new TextView(getContext());
-                headerCell.setText(headerValues[i]);
-                headerCell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
-                headerCell.setBackgroundResource(R.drawable.header_cell_border);
-                headerCell.setTypeface(null, Typeface.BOLD);
-                headerCell.setSingleLine(false);
-                headerCell.setEllipsize(null);
-                headerRow.addView(headerCell, i);
-            }
+        TableRow headerRow = (TableRow) tableLayout.getChildAt(0);
+        headerRow.removeAllViews(); // Clear any existing header cells
+        for (String headerValue : headerValues) {
+            TextView headerCell = new TextView(getContext());
+            headerCell.setText(headerValue);
+            headerCell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
+            headerCell.setBackgroundResource(R.drawable.header_cell_border);
+            headerCell.setTypeface(null, Typeface.BOLD);
+            headerCell.setSingleLine(false);
+            headerCell.setEllipsize(null);
+            headerRow.addView(headerCell);
         }
+        headerRow.setVisibility(VISIBLE);
     }
 
     public void setCellSpan(int row, int column, int rowSpan, int colSpan) {
@@ -361,18 +356,18 @@ public class CustomTableView extends HorizontalScrollView {
     }
 
 
-//    public void addColumn(String[] columnValues) {
-//        int longestRowIndex = findLongestRow();
-//        int longestRowCells = ((TableRow) tableLayout.getChildAt(longestRowIndex)).getChildCount();
-//
-//        if (hasHeader) {
-//            // Add an empty header cell
-//            addHeaderCell("", longestRowCells);
-//        }
-//
-//        // Use the helper function to add the column values
-//        addColumnValues(columnValues, hasHeader ? 1 : 0,longestRowCells);
-//    }
+    public void addColumn(String[] columnValues) {
+        int longestRowIndex = findLongestRow();
+        int longestRowCells = ((TableRow) tableLayout.getChildAt(longestRowIndex)).getChildCount();
+
+        if (hasHeader) {
+            // Add an empty header cell
+            addHeaderCell("", longestRowCells);
+        }
+
+        // Use the helper function to add the column values
+        addColumnValues(columnValues, hasHeader ? 1 : 0,longestRowCells);
+    }
 
 
     public void removeColumn(int column) {
@@ -389,7 +384,7 @@ public class CustomTableView extends HorizontalScrollView {
     }
 
     private boolean isValidRow(int row) {
-        return row >= 0 && row < tableLayout.getChildCount();
+        return row >= (hasHeader ? 1 : 0) && row < tableLayout.getChildCount();
     }
 
     private boolean isValidColumn(int column, int row) {
