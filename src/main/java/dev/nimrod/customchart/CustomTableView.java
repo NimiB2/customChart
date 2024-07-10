@@ -14,8 +14,10 @@ import android.widget.TextView;
 import com.google.android.material.textview.MaterialTextView;
 
 public class CustomTableView extends HorizontalScrollView {
+    //numbernig & remove col
     private final int DEFAULT_PADDING = 8;
-
+    private final String NUMBERING_TITLE = "Numbering";
+    private String numberingHeaderText;
     private boolean isRowNumberingEnabled = false;
     private TableLayout tableLayout;
     private MaterialTextView tableTitle;
@@ -36,7 +38,7 @@ public class CustomTableView extends HorizontalScrollView {
         super(context, attrs, defStyleAttr);
         init(context);
     }
-    // שינוי
+
     private void init(Context context) {
         LayoutInflater.from(context).inflate(R.layout.table_view, this, true);
         tableLayout = findViewById(R.id.table_layout);
@@ -105,6 +107,23 @@ public class CustomTableView extends HorizontalScrollView {
     }
 
     private void updateRowNumbers() {
+        TableRow headerRow = (TableRow) tableLayout.getChildAt(0);
+        if (isRowNumberingEnabled) {
+            if (headerRow.getChildCount() == 0 || !(headerRow.getChildAt(0) instanceof TextView && ((TextView) headerRow.getChildAt(0)).getText().toString().equals("Numbering"))) {
+                TextView headerCell = new TextView(getContext());
+                numberingHeaderText = NUMBERING_TITLE;
+                headerCell.setText(numberingHeaderText);
+                headerCell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
+                headerCell.setBackgroundResource(R.drawable.header_cell_border);
+                headerCell.setTypeface(null, Typeface.BOLD);
+                headerRow.addView(headerCell, 0);
+            }
+        } else {
+            if (headerRow.getChildCount() > 0 && headerRow.getChildAt(0) instanceof TextView && ((TextView) headerRow.getChildAt(0)).getText().toString().equals("Numbering")) {
+                headerRow.removeViewAt(0);
+            }
+        }
+
         for (int i = hasHeader ? 1 : 0; i < tableLayout.getChildCount(); i++) {
             TableRow row = (TableRow) tableLayout.getChildAt(i);
             TextView numberCell = new TextView(getContext());
@@ -119,6 +138,13 @@ public class CustomTableView extends HorizontalScrollView {
                     row.removeViewAt(0);
                 }
             }
+        }
+    }
+
+    public void setNumberingHeaderText(String text) {
+        this.numberingHeaderText = text;
+        if (isRowNumberingEnabled) {
+            updateRowNumbers();
         }
     }
 
@@ -223,9 +249,15 @@ public class CustomTableView extends HorizontalScrollView {
     public void removeCell(int row, int column) {
         if (isValidPosition(row, column)) {
             TableRow tableRow = (TableRow) tableLayout.getChildAt(row);
-            tableRow.removeViewAt(column);
+            if (tableRow.getChildCount() > 1) {
+                TextView cell = (TextView) tableRow.getChildAt(column);
+                cell.setText(""); // Empty the cell content
+            } else {
+                tableRow.removeViewAt(column);
+            }
         }
     }
+
 
     public void setCellText(int row, int column, String text) {
         if (isValidPosition(row, column)) {
@@ -298,7 +330,7 @@ public class CustomTableView extends HorizontalScrollView {
         }
     }
 
-    private void addColumnValues(String[] columnValues, int startIndex,int longestRowCells) {
+    private void addColumnValues(String[] columnValues, int startIndex, int longestRowCells) {
 
         // Insert the new column cells
         for (int i = 0; i < columnValues.length; i++) {
@@ -352,7 +384,7 @@ public class CustomTableView extends HorizontalScrollView {
         }
 
         // Use the helper function to add the column values
-        addColumnValues(columnValues, 1,longestRowCells);
+        addColumnValues(columnValues, 1, longestRowCells);
     }
 
 
@@ -366,7 +398,7 @@ public class CustomTableView extends HorizontalScrollView {
         }
 
         // Use the helper function to add the column values
-        addColumnValues(columnValues, hasHeader ? 1 : 0,longestRowCells);
+        addColumnValues(columnValues, hasHeader ? 1 : 0, longestRowCells);
     }
 
 
