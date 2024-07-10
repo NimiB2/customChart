@@ -15,6 +15,7 @@ import com.google.android.material.textview.MaterialTextView;
 
 public class CustomTableView extends HorizontalScrollView {
     private final int DEFAULT_PADDING = 8;
+
     private boolean isRowNumberingEnabled = false;
     private TableLayout tableLayout;
     private MaterialTextView tableTitle;
@@ -302,9 +303,44 @@ public class CustomTableView extends HorizontalScrollView {
         }
     }
 
+    private void addColumnValues(String[] columnValues, int startIndex,int longestRowCells) {
+
+        // Insert the new column cells
+        for (int i = 0; i < columnValues.length; i++) {
+            if (i + startIndex < tableLayout.getChildCount()) {
+                TableRow currentRow = (TableRow) tableLayout.getChildAt(i + startIndex);
+
+                // Add empty cells if current row has fewer cells than the longest row
+                while (currentRow.getChildCount() < longestRowCells) {
+                    addCellToRow(i + startIndex, "");
+                }
+
+                addCellToRow(i + startIndex, columnValues[i]);
+            } else {
+                // Add an empty row with the new column value in the last position
+                String[] newRowValues = new String[longestRowCells + 1];
+                for (int j = 0; j < longestRowCells; j++) {
+                    newRowValues[j] = "";
+                }
+                newRowValues[longestRowCells] = columnValues[i];
+                addRow(newRowValues);
+            }
+        }
+
+        // Add remaining empty cells to existing rows if needed
+        for (int i = startIndex; i < tableLayout.getChildCount(); i++) {
+            TableRow currentRow = (TableRow) tableLayout.getChildAt(i);
+            while (currentRow.getChildCount() < longestRowCells + 1) { // +1 to account for the new column
+                addCellToRow(i, "");
+            }
+        }
+    }
+
+
     public void addColumnWithHeader(String[] columnValues, String headerValue) {
         int longestRowIndex = findLongestRow();
         int columnIndex = ((TableRow) tableLayout.getChildAt(longestRowIndex)).getChildCount();
+        int longestRowCells = ((TableRow) tableLayout.getChildAt(longestRowIndex)).getChildCount();
 
         if (!hasHeader) {
             // If there are no headers, add a header row with empty values and the new header
@@ -320,59 +356,24 @@ public class CustomTableView extends HorizontalScrollView {
             addHeaderCell(headerValue, columnIndex);
         }
 
-        int columnCount = tableLayout.getChildCount() > 0 ? ((TableRow) tableLayout.getChildAt(0)).getChildCount() : 0;
-
-        // Insert the new column cells
-        for (int i = 0; i < columnValues.length; i++) {
-            if (i + 1 < tableLayout.getChildCount()) { // i + 1 to skip the header row
-                addCellToRow(i + 1, columnValues[i]);
-            } else {
-                addRow(new String[columnCount]); // Add an empty row
-                addCellToRow(i + 1, columnValues[i]);
-            }
-        }
+        // Use the helper function to add the column values
+        addColumnValues(columnValues, 1,longestRowCells);
     }
 
-    public void addColumn(String[] columnValues) {
-        int longestRowIndex = findLongestRow();
-        int longestRowCells = ((TableRow) tableLayout.getChildAt(longestRowIndex)).getChildCount();
-        int columnCount = tableLayout.getChildCount() > 0 ? ((TableRow) tableLayout.getChildAt(0)).getChildCount() : 0;
 
-        if (hasHeader) {
-            // Add an empty header cell
-            addHeaderCell("", longestRowCells);
-        }
+//    public void addColumn(String[] columnValues) {
+//        int longestRowIndex = findLongestRow();
+//        int longestRowCells = ((TableRow) tableLayout.getChildAt(longestRowIndex)).getChildCount();
+//
+//        if (hasHeader) {
+//            // Add an empty header cell
+//            addHeaderCell("", longestRowCells);
+//        }
+//
+//        // Use the helper function to add the column values
+//        addColumnValues(columnValues, hasHeader ? 1 : 0,longestRowCells);
+//    }
 
-        // Insert the new column cells
-        for (int i = 0; i < columnValues.length; i++) {
-            if (i + (hasHeader ? 1 : 0) < tableLayout.getChildCount()) {
-                TableRow currentRow = (TableRow) tableLayout.getChildAt(i + (hasHeader ? 1 : 0));
-
-                // Add empty cells if current row has fewer cells than the longest row
-                while (currentRow.getChildCount() < longestRowCells) {
-                    addCellToRow(i + (hasHeader ? 1 : 0), "");
-                }
-
-                addCellToRow(i + (hasHeader ? 1 : 0), columnValues[i]);
-            } else {
-                // Add an empty row with the new column value in the last position
-                String[] newRowValues = new String[longestRowCells + 1];
-                for (int j = 0; j < longestRowCells; j++) {
-                    newRowValues[j] = "";
-                }
-                newRowValues[longestRowCells] = columnValues[i];
-                addRow(newRowValues);
-            }
-        }
-
-        // Add remaining empty cells to existing rows if needed
-        for (int i = (hasHeader ? 1 : 0); i < tableLayout.getChildCount(); i++) {
-            TableRow currentRow = (TableRow) tableLayout.getChildAt(i);
-            while (currentRow.getChildCount() < longestRowCells + 1) { // +1 to account for the new column
-                addCellToRow(i, "");
-            }
-        }
-    }
 
     public void removeColumn(int column) {
         for (int i = 0; i < tableLayout.getChildCount(); i++) {
