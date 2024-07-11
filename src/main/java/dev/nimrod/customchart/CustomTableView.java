@@ -239,9 +239,9 @@ public class CustomTableView extends HorizontalScrollView {
                 cell.setTextColor(TEXT_COLOR);
                 cell.setTypeface(null, Typeface.NORMAL);
                 cell.setTextSize(TEXT_SIZE);
+                cell.setBackgroundResource(R.drawable.cell_border);
                 cell.setText(""); // Empty the cell content
                 cell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
-                cell.setBackgroundResource(R.drawable.cell_border);
                 cell.setSingleLine(false);
                 cell.setEllipsize(null);
             } else {
