@@ -1,6 +1,7 @@
 package dev.nimrod.customchart;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -14,9 +15,11 @@ import android.widget.TextView;
 import com.google.android.material.textview.MaterialTextView;
 
 public class CustomTableView extends HorizontalScrollView {
-    //numbernig & remove col
     private final int DEFAULT_PADDING = 8;
     private final String NUMBERING_TITLE = "Numbering";
+    private final int TEXT_COLOR = Color.BLACK;
+    private final float TEXT_SIZE = 18;
+
     private String numberingHeaderText;
     private boolean isRowNumberingEnabled = false;
     private TableLayout tableLayout;
@@ -76,25 +79,7 @@ public class CustomTableView extends HorizontalScrollView {
         tableLayout.addView(row, hasHeader ? tableLayout.getChildCount() : tableLayout.getChildCount());
     }
 
-    public void showHorizontalLines() {
-        for (int i = 0; i < tableLayout.getChildCount(); i++) {
-            TableRow row = (TableRow) tableLayout.getChildAt(i);
-            for (int j = 0; j < row.getChildCount(); j++) {
-                TextView cell = (TextView) row.getChildAt(j);
-                cell.setBackgroundResource(R.drawable.cell_border);
-            }
-        }
-    }
 
-    public void hideHorizontalLines() {
-        for (int i = 0; i < tableLayout.getChildCount(); i++) {
-            TableRow row = (TableRow) tableLayout.getChildAt(i);
-            for (int j = 0; j < row.getChildCount(); j++) {
-                TextView cell = (TextView) row.getChildAt(j);
-                cell.setBackgroundResource(0);
-            }
-        }
-    }
 
     public void enableRowNumbering() {
         isRowNumberingEnabled = true;
@@ -251,7 +236,14 @@ public class CustomTableView extends HorizontalScrollView {
             TableRow tableRow = (TableRow) tableLayout.getChildAt(row);
             if (tableRow.getChildCount() > 1) {
                 TextView cell = (TextView) tableRow.getChildAt(column);
+                cell.setTextColor(TEXT_COLOR);
+                cell.setTypeface(null, Typeface.NORMAL);
+                cell.setTextSize(TEXT_SIZE);
                 cell.setText(""); // Empty the cell content
+                cell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
+                cell.setBackgroundResource(R.drawable.cell_border);
+                cell.setSingleLine(false);
+                cell.setEllipsize(null);
             } else {
                 tableRow.removeViewAt(column);
             }
