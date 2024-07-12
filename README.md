@@ -69,16 +69,6 @@ customTableView.setCellTextSize(1, 2, 20);
 customTableView.setCellTextStyle(1, 2, Typeface.BOLD);
 ```
 
-### Handling Click Events
-
-```java
-customTableView.setCellClickListener(1, 2, new View.OnClickListener() {
-    @Override
-    public void onClick(View v) {
-        // Handle cell click
-    }
-});
-```
 
 ### Advanced Features
 
