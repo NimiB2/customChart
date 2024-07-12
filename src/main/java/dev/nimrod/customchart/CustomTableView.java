@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.HorizontalScrollView;
@@ -47,6 +48,7 @@ public class CustomTableView extends HorizontalScrollView {
         LayoutInflater.from(context).inflate(R.layout.table_view, this, true);
         tableLayout = findViewById(R.id.table_layout);
         tableTitle = findViewById(R.id.table_title);
+        numberingHeaderText = NUMBERING_TITLE;
         // Add an empty header row
         TableRow headerRow = new TableRow(getContext());
         tableLayout.addView(headerRow, 0);
@@ -108,43 +110,48 @@ public class CustomTableView extends HorizontalScrollView {
     }
 
     private void updateRowNumbers() {
+        // Handle the header row for numbering
         TableRow headerRow = (TableRow) tableLayout.getChildAt(0);
-        if (isRowNumberingEnabled) {
-            if (headerRow.getChildCount() == 0 || !(headerRow.getChildAt(0) instanceof TextView && ((TextView) headerRow.getChildAt(0)).getText().toString().equals(NUMBERING_TITLE))) {
+        if (hasHeader) {
+            if (headerRow.getChildCount() == 0 || !(headerRow.getChildAt(0) instanceof TextView)) {
                 TextView headerCell = new TextView(getContext());
-                numberingHeaderText = NUMBERING_TITLE;
-                headerCell.setText(numberingHeaderText);
+                headerCell.setText(numberingHeaderText != null ? numberingHeaderText : NUMBERING_TITLE);
                 headerCell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
                 headerCell.setBackgroundResource(R.drawable.header_cell_border);
                 headerCell.setTypeface(null, Typeface.BOLD);
+                headerCell.setGravity(Gravity.CENTER_VERTICAL);
                 headerRow.addView(headerCell, 0);
-            }
-        } else {
-            if (headerRow.getChildCount() > 0 && headerRow.getChildAt(0) instanceof TextView && ((TextView) headerRow.getChildAt(0)).getText().toString().equals(NUMBERING_TITLE)) {
-                headerRow.removeViewAt(0);
+            } else {
+                ((TextView) headerRow.getChildAt(0)).setText(numberingHeaderText != null ? numberingHeaderText : NUMBERING_TITLE);
             }
         }
 
-        for (int i = hasHeader ? 1 : 0; i < tableLayout.getChildCount(); i++) {
+        for (int i = 1; i < tableLayout.getChildCount(); i++) {
             TableRow row = (TableRow) tableLayout.getChildAt(i);
             TextView numberCell = new TextView(getContext());
-            numberCell.setText(String.valueOf(i - (hasHeader ? 1 : 0) + 1));
+            numberCell.setText(String.valueOf(i));
             numberCell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
+            numberCell.setGravity(Gravity.CENTER);
             if (isRowNumberingEnabled) {
-                if (row.getChildCount() == 0 || !(row.getChildAt(0) instanceof TextView && ((TextView) row.getChildAt(0)).getText().toString().equals(String.valueOf(i - (hasHeader ? 1 : 0) + 1)))) {
+                if (row.getChildCount() == 0 || !(row.getChildAt(0) instanceof TextView && ((TextView) row.getChildAt(0)).getText().toString().equals(String.valueOf(i)))) {
                     row.addView(numberCell, 0);
                 }
             } else {
-                if (row.getChildCount() > 0 && row.getChildAt(0) instanceof TextView && ((TextView) row.getChildAt(0)).getText().toString().equals(String.valueOf(i - (hasHeader ? 1 : 0) + 1))) {
+                if (row.getChildCount() > 0 && row.getChildAt(0) instanceof TextView && ((TextView) row.getChildAt(0)).getText().toString().equals(String.valueOf(i))) {
                     row.removeViewAt(0);
                 }
             }
         }
     }
 
+
     public void setNumberingHeaderText(String text) {
         this.numberingHeaderText = text;
         if (isRowNumberingEnabled) {
+            TableRow headerRow = (TableRow) tableLayout.getChildAt(0);
+            if (headerRow != null && headerRow.getChildCount() > 0 && headerRow.getChildAt(0) instanceof TextView) {
+                ((TextView) headerRow.getChildAt(0)).setText(numberingHeaderText);
+            }
             updateRowNumbers();
         }
     }
@@ -318,6 +325,21 @@ public class CustomTableView extends HorizontalScrollView {
         hasHeader = true;
         TableRow headerRow = (TableRow) tableLayout.getChildAt(0);
         headerRow.removeAllViews(); // Clear any existing header cells
+
+        // Add numbering header if row numbering is enabled
+        if (isRowNumberingEnabled) {
+            TextView headerCell = new TextView(getContext());
+            headerCell.setText(numberingHeaderText != null ? numberingHeaderText : NUMBERING_TITLE);
+            headerCell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
+            headerCell.setBackgroundResource(R.drawable.header_cell_border);
+            headerCell.setTypeface(null, Typeface.BOLD);
+            headerCell.setSingleLine(false);
+            headerCell.setEllipsize(null);
+            headerCell.setGravity(Gravity.CENTER_VERTICAL);
+            headerRow.addView(headerCell);
+        }
+
+        // Add header cells
         for (String headerValue : headerValues) {
             TextView headerCell = new TextView(getContext());
             headerCell.setText(headerValue);
@@ -328,8 +350,23 @@ public class CustomTableView extends HorizontalScrollView {
             headerCell.setEllipsize(null);
             headerRow.addView(headerCell);
         }
+
+        // Ensure each column has a header cell, even if it is empty
+        int longestRowCells = getLongestRowCells();
+        while (headerRow.getChildCount() < longestRowCells) {
+            TextView headerCell = new TextView(getContext());
+            headerCell.setText(""); // Empty header cell
+            headerCell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
+            headerCell.setBackgroundResource(R.drawable.header_cell_border);
+            headerCell.setTypeface(null, Typeface.BOLD);
+            headerCell.setSingleLine(false);
+            headerCell.setEllipsize(null);
+            headerRow.addView(headerCell);
+        }
+
         headerRow.setVisibility(VISIBLE);
     }
+
 
     public void setCellSpan(int row, int column, int rowSpan, int colSpan) {
         if (isValidPosition(row, column)) {
