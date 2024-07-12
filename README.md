@@ -109,9 +109,6 @@ Changing the title, adding headers, a new row, a new column, and enabling number
 
 ![צילום מסך 2024-07-12 170445](https://github.com/user-attachments/assets/edda2252-67df-431d-b222-7bbccc683e90)
 
-## License
-
-This library is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
 
 ## Contribution
 
