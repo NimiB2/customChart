@@ -3,6 +3,7 @@ package dev.nimrod.customchart;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -56,6 +57,7 @@ public class CustomTableView extends HorizontalScrollView {
         }
     }
 
+
     public void setTitle(String title) {
         tableTitle.setText(title);
         tableTitle.setVisibility(VISIBLE);
@@ -66,19 +68,33 @@ public class CustomTableView extends HorizontalScrollView {
     }
 
     public void addRow(String[] cellValues) {
+        int longestRowCells = getLongestRowCells();
         TableRow row = new TableRow(getContext());
+
+        // Add cells from the new row
+        int newRowCells = cellValues.length;
         for (String cellValue : cellValues) {
-            TextView cell = new TextView(getContext());
-            cell.setText(cellValue);
-            cell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
-            cell.setBackgroundResource(R.drawable.cell_border);
-            cell.setSingleLine(false);
-            cell.setEllipsize(null);
-            row.addView(cell);
+            row.addView(createCell(cellValue));
         }
+        // Add empty cells if the new row is shorter than the longest row
+        for (int i = newRowCells; i < longestRowCells; i++) {
+            row.addView(createCell(""));
+        }
+
         tableLayout.addView(row, hasHeader ? tableLayout.getChildCount() : tableLayout.getChildCount());
+
+        // Update all rows to have the same number of cells
+        updateAllRowsToLongestRow();
     }
 
+    public void removeRow(int position) {
+        if (position >= 0 && position < tableLayout.getChildCount()) {
+            tableLayout.removeViewAt(position);
+            if (isRowNumberingEnabled) {
+                updateRowNumbers();
+            }
+        }
+    }
 
 
     public void enableRowNumbering() {
@@ -94,7 +110,7 @@ public class CustomTableView extends HorizontalScrollView {
     private void updateRowNumbers() {
         TableRow headerRow = (TableRow) tableLayout.getChildAt(0);
         if (isRowNumberingEnabled) {
-            if (headerRow.getChildCount() == 0 || !(headerRow.getChildAt(0) instanceof TextView && ((TextView) headerRow.getChildAt(0)).getText().toString().equals("Numbering"))) {
+            if (headerRow.getChildCount() == 0 || !(headerRow.getChildAt(0) instanceof TextView && ((TextView) headerRow.getChildAt(0)).getText().toString().equals(NUMBERING_TITLE))) {
                 TextView headerCell = new TextView(getContext());
                 numberingHeaderText = NUMBERING_TITLE;
                 headerCell.setText(numberingHeaderText);
@@ -104,7 +120,7 @@ public class CustomTableView extends HorizontalScrollView {
                 headerRow.addView(headerCell, 0);
             }
         } else {
-            if (headerRow.getChildCount() > 0 && headerRow.getChildAt(0) instanceof TextView && ((TextView) headerRow.getChildAt(0)).getText().toString().equals("Numbering")) {
+            if (headerRow.getChildCount() > 0 && headerRow.getChildAt(0) instanceof TextView && ((TextView) headerRow.getChildAt(0)).getText().toString().equals(NUMBERING_TITLE)) {
                 headerRow.removeViewAt(0);
             }
         }
@@ -153,19 +169,24 @@ public class CustomTableView extends HorizontalScrollView {
         if (isValidPosition(row, column)) {
             TableRow tableRow = (TableRow) tableLayout.getChildAt(row);
             TextView cell = (TextView) tableRow.getChildAt(column);
-            cell.setBackgroundColor(color);
+            Drawable background = DrawableUtil.updateDrawableInteriorColor(getContext(), R.drawable.cell_border, color);
+            cell.setBackground(background);
         }
     }
+
+
 
     public void setRowColor(int row, int color) {
         if (isValidRow(row)) {
             TableRow tableRow = (TableRow) tableLayout.getChildAt(row);
             for (int i = 0; i < tableRow.getChildCount(); i++) {
                 TextView cell = (TextView) tableRow.getChildAt(i);
-                cell.setBackgroundColor(color);
+                Drawable background = DrawableUtil.updateDrawableInteriorColor(getContext(), R.drawable.cell_border, color);
+                cell.setBackground(background);
             }
         }
     }
+
 
     public void setColumnColor(int column, int color) {
         if (isValidColumn(column)) {
@@ -173,12 +194,12 @@ public class CustomTableView extends HorizontalScrollView {
                 TableRow tableRow = (TableRow) tableLayout.getChildAt(i);
                 if (column < tableRow.getChildCount()) {
                     TextView cell = (TextView) tableRow.getChildAt(column);
-                    cell.setBackgroundColor(color);
+                    Drawable background = DrawableUtil.updateDrawableInteriorColor(getContext(), R.drawable.cell_border, color);
+                    cell.setBackground(background);
                 }
             }
         }
     }
-
     public void setCellTextColor(int row, int column, int color) {
         if (isValidPosition(row, column)) {
             TableRow tableRow = (TableRow) tableLayout.getChildAt(row);
@@ -204,32 +225,39 @@ public class CustomTableView extends HorizontalScrollView {
     }
 
     public void insertRow(int position, String[] cellValues) {
-        if (position >= 0 && position <= tableLayout.getChildCount()) {
-            TableRow row = new TableRow(getContext());
-            for (String cellValue : cellValues) {
-                TextView cell = new TextView(getContext());
-                cell.setText(cellValue);
-                cell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
-                cell.setBackgroundResource(R.drawable.cell_border);
-                cell.setSingleLine(false);
-                cell.setEllipsize(null);
-                row.addView(cell);
-            }
-            tableLayout.addView(row, position);
-            if (isRowNumberingEnabled) {
-                updateRowNumbers();
+        int longestRowCells = getLongestRowCells();
+        TableRow row = new TableRow(getContext());
+
+        // Add cells from the new row
+        int newRowCells = cellValues.length;
+        for (String cellValue : cellValues) {
+            row.addView(createCell(cellValue));
+        }
+        // Add empty cells if the new row is shorter than the longest row
+        for (int i = newRowCells; i < longestRowCells; i++) {
+            row.addView(createCell(""));
+        }
+
+        tableLayout.addView(row, position);
+        if (isRowNumberingEnabled) {
+            updateRowNumbers();
+        }
+
+        // Update all rows to have the same number of cells
+        updateAllRowsToLongestRow();
+    }
+
+    private void updateAllRowsToLongestRow() {
+        int longestRowCells = getLongestRowCells();
+
+        for (int i = 0; i < tableLayout.getChildCount(); i++) {
+            TableRow row = (TableRow) tableLayout.getChildAt(i);
+            while (row.getChildCount() < longestRowCells) {
+                row.addView(createCell(""));
             }
         }
     }
 
-    public void removeRow(int position) {
-        if (position >= 0 && position < tableLayout.getChildCount()) {
-            tableLayout.removeViewAt(position);
-            if (isRowNumberingEnabled) {
-                updateRowNumbers();
-            }
-        }
-    }
 
     public void removeCell(int row, int column) {
         if (isValidPosition(row, column)) {
@@ -357,40 +385,69 @@ public class CustomTableView extends HorizontalScrollView {
 
 
     public void addColumnWithHeader(String[] columnValues, String headerValue) {
-        int longestRowIndex = findLongestRow();
-        int columnIndex = ((TableRow) tableLayout.getChildAt(longestRowIndex)).getChildCount();
-        int longestRowCells = ((TableRow) tableLayout.getChildAt(longestRowIndex)).getChildCount();
-
         if (!hasHeader) {
-            // If there are no headers, add a header row with empty values and the new header
-            String[] headerValues = new String[columnIndex + 1];
-            for (int i = 0; i < columnIndex; i++) {
-                headerValues[i] = "";
-            }
-            headerValues[columnIndex] = headerValue;
-            addHeaderRow(headerValues);
-            hasHeader = true;
+            addHeaderRow(new String[]{headerValue});
         } else {
-            // Insert the header cell
-            addHeaderCell(headerValue, columnIndex);
+            TableRow headerRow = (TableRow) tableLayout.getChildAt(0);
+            headerRow.addView(createHeaderCell(headerValue));
         }
 
-        // Use the helper function to add the column values
-        addColumnValues(columnValues, 1, longestRowCells);
+        addColumn(columnValues);
+    }
+
+    private TextView createCell(String text) {
+        TextView cell = new TextView(getContext());
+        cell.setText(text);
+        cell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
+        cell.setBackgroundResource(R.drawable.cell_border);
+        cell.setSingleLine(false);
+        cell.setEllipsize(null);
+        return cell;
+    }
+
+    private TextView createHeaderCell(String text) {
+        TextView cell = createCell(text);
+        cell.setTypeface(null, Typeface.BOLD);
+        cell.setBackgroundResource(R.drawable.header_cell_border);
+        return cell;
+    }
+
+    private int getLongestRowCells() {
+        int maxCells = 0;
+        for (int i = 0; i < tableLayout.getChildCount(); i++) {
+            TableRow row = (TableRow) tableLayout.getChildAt(i);
+            if (row.getChildCount() > maxCells) {
+                maxCells = row.getChildCount();
+            }
+        }
+        return maxCells;
     }
 
 
     public void addColumn(String[] columnValues) {
-        int longestRowIndex = findLongestRow();
-        int longestRowCells = ((TableRow) tableLayout.getChildAt(longestRowIndex)).getChildCount();
+        int longestRowCells = getLongestRowCells();
 
-        if (hasHeader) {
-            // Add an empty header cell
-            addHeaderCell("", longestRowCells);
+        // Add column values to each row
+        for (int i = hasHeader ? 1 : 0; i < columnValues.length + (hasHeader ? 1 : 0); i++) {
+            if (i < tableLayout.getChildCount()) {
+                TableRow row = (TableRow) tableLayout.getChildAt(i);
+                row.addView(createCell(columnValues[i - (hasHeader ? 1 : 0)]));
+            } else {
+                TableRow newRow = new TableRow(getContext());
+                for (int j = 0; j < longestRowCells; j++) {
+                    newRow.addView(createCell(j == longestRowCells ? columnValues[i - (hasHeader ? 1 : 0)] : ""));
+                }
+                tableLayout.addView(newRow);
+            }
         }
 
-        // Use the helper function to add the column values
-        addColumnValues(columnValues, hasHeader ? 1 : 0, longestRowCells);
+        // Add empty cells to rows that are shorter than the longest row
+        for (int i = 0; i < tableLayout.getChildCount(); i++) {
+            TableRow row = (TableRow) tableLayout.getChildAt(i);
+            while (row.getChildCount() < longestRowCells + 1) {
+                row.addView(createCell(""));
+            }
+        }
     }
 
 
