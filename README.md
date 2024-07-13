@@ -92,19 +92,19 @@ customTableView.addColumnWithHeader(new String[]{"Col 5", "Value 5", "Value 5", 
 A basic table with 6 rows and 4 columns.
 
 
-![צילום מסך 2024-07-12 165924](https://github.com/user-attachments/assets/877a5f9d-cb37-4931-9f95-cbba0f35ebbc)
+![צילום מסך 2024-07-13 121429](https://github.com/user-attachments/assets/f7e88992-a3ef-4e01-92e2-f389ae7d9c50)
 
 ### Adding Colors and Sizes
 Customizing cell background colors, text colors, text style and text sizes.
 
+![צילום מסך 2024-07-13 121706](https://github.com/user-attachments/assets/e3ea3e7c-8213-4258-bb1d-934b8b22d469)
 
-![צילום מסך 2024-07-12 170355](https://github.com/user-attachments/assets/8bb845b5-2469-4983-9e0b-bd6dc7fb5392)
 
 ### Advanced Table
 Changing the title, adding headers, a new row, a new column, and enabling numbering.
 
+![צילום מסך 2024-07-13 122552](https://github.com/user-attachments/assets/ad4beef3-c3ce-4706-9915-4cbc7c308564)
 
-![צילום מסך 2024-07-12 170445](https://github.com/user-attachments/assets/edda2252-67df-431d-b222-7bbccc683e90)
 
 
 ## Contribution
