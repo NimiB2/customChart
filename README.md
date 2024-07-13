@@ -1,5 +1,3 @@
-Sure! Here is the complete README in one block for easy copying:
-
 ```markdown
 # Custom Table View Library
 
