@@ -1,4 +1,3 @@
-```markdown
 # Custom Table View Library
 
 Welcome to the Custom Table View Library for Android! This library allows you to create and manage customizable tables in your Android applications with ease. Below, you'll find detailed information on how to use this library, along with examples and images to showcase its features.
