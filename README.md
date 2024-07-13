@@ -1,11 +1,11 @@
 ```markdown
 # Custom Table View Library
 
-Welcome to the Custom Table View Library for Android! This library allows you to create and manage customizable tables in your Android applications with ease. Below, you'll find detailed information on how to use this library, along with examples and images to showcase its features.
+**Welcome** to the Custom Table View Library for Android! This library allows you to create and manage customizable tables in your Android applications with ease. Below, you'll find detailed information on how to use this library, along with examples and images to showcase its features.
 
 ## Features
 
-- ** Customizable Rows and Columns **: Add, remove, and customize rows and columns easily.
+- **Customizable Rows and Columns**: Add, remove, and customize rows and columns easily.
 - **Row Numbering**: Enable or disable row numbering with a customizable header text.
 - **Cell Customization**: Change the background color, text color, text size, and text style of individual cells.
 - **Dynamic Headers**: Add and manage header rows with customizable styles.
