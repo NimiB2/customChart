@@ -95,7 +95,7 @@ A basic table with 6 rows and 4 columns.
 ![צילום מסך 2024-07-12 165924](https://github.com/user-attachments/assets/877a5f9d-cb37-4931-9f95-cbba0f35ebbc)
 
 ### Adding Colors and Sizes
-Customizing cell background colors, text colors, and text sizes.
+Customizing cell background colors, text colors, text style and text sizes.
 
 
 ![צילום מסך 2024-07-12 170355](https://github.com/user-attachments/assets/8bb845b5-2469-4983-9e0b-bd6dc7fb5392)
