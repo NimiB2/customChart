@@ -5,7 +5,7 @@ Welcome to the Custom Table View Library for Android! This library allows you to
 
 ## Features
 
-- **Customizable Rows and Columns**: Add, remove, and customize rows and columns easily.
+- _Customizable Rows and Columns_: Add, remove, and customize rows and columns easily.
 - **Row Numbering**: Enable or disable row numbering with a customizable header text.
 - **Cell Customization**: Change the background color, text color, text size, and text style of individual cells.
 - **Dynamic Headers**: Add and manage header rows with customizable styles.
