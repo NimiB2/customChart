@@ -18,7 +18,7 @@ import com.google.android.material.textview.MaterialTextView;
 
 public class CustomTableView extends HorizontalScrollView {
     private static final int DEFAULT_PADDING = 8;
-    private static final String NUMBERING_TITLE = "Numbering";
+    private static final String NUMBERING_TITLE = "NUM";
     private static final int TEXT_COLOR = Color.BLACK;
     private static final float TEXT_SIZE = 18;
 
@@ -79,6 +79,18 @@ public class CustomTableView extends HorizontalScrollView {
         }
     }
 
+    private TextView createNumberingCell(String text) {
+        TextView cell = new TextView(getContext());
+        cell.setText(text);
+        cell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
+        cell.setBackgroundResource(R.drawable.cell_border); // Ensure default background
+        cell.setSingleLine(false);
+        cell.setEllipsize(null);
+        cell.setGravity(Gravity.CENTER); // Center the text
+        return cell;
+    }
+
+
     public void enableRowNumbering() {
         isRowNumberingEnabled = true;
         updateRowNumbers();
@@ -102,7 +114,11 @@ public class CustomTableView extends HorizontalScrollView {
 
 
     private void updateNumberingCell(TableRow row, int index) {
-        TextView numberCell = createCell(String.valueOf(index));
+        TextView numberCell = createNumberingCell(String.valueOf(index));
+        TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
+        params.setMargins(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING); // Adjust as necessary
+        numberCell.setLayoutParams(params);
+
         if (isRowNumberingEnabled) {
             if (!(row.getChildAt(0) instanceof TextView && ((TextView) row.getChildAt(0)).getText().toString().equals(String.valueOf(index)))) {
                 row.addView(numberCell, 0);
@@ -115,6 +131,7 @@ public class CustomTableView extends HorizontalScrollView {
             }
         }
     }
+
 
     private void updateHeaderForNumbering() {
         if (hasHeader) {
