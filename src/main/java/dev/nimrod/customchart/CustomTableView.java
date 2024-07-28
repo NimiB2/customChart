@@ -16,6 +16,10 @@ import android.widget.TextView;
 
 import com.google.android.material.textview.MaterialTextView;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class CustomTableView extends HorizontalScrollView {
     private static final int DEFAULT_PADDING = 8;
     private static final String NUMBERING_TITLE = "NUM";
@@ -509,6 +513,33 @@ public class CustomTableView extends HorizontalScrollView {
             }
         }
     }
+    public void enableColumnSorting() {
+        if (!hasHeader) return;
 
+        TableRow headerRow = (TableRow) tableLayout.getChildAt(0);
+        for (int i = 0; i < headerRow.getChildCount(); i++) {
+            final int columnIndex = i;
+            TextView headerCell = (TextView) headerRow.getChildAt(i);
+            headerCell.setOnClickListener(v -> sortColumn(columnIndex));
+        }
+    }
+
+    private void sortColumn(int columnIndex) {
+        List<TableRow> rows = new ArrayList<>();
+        for (int i = 1; i < tableLayout.getChildCount(); i++) {
+            rows.add((TableRow) tableLayout.getChildAt(i));
+        }
+
+        Collections.sort(rows, (row1, row2) -> {
+            TextView cell1 = (TextView) row1.getChildAt(columnIndex);
+            TextView cell2 = (TextView) row2.getChildAt(columnIndex);
+            return cell1.getText().toString().compareTo(cell2.getText().toString());
+        });
+
+        for (int i = 0; i < rows.size(); i++) {
+            tableLayout.removeView(rows.get(i));
+            tableLayout.addView(rows.get(i), i + 1);
+        }
+    }
 
 }
