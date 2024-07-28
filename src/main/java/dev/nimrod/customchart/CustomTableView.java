@@ -4,33 +4,48 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import androidx.appcompat.widget.AppCompatEditText;
+
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import dev.nimrod.customchart.Util.TableViewCaretaker;
+import dev.nimrod.customchart.Util.TableViewMemento;
+
 public class CustomTableView extends HorizontalScrollView {
     private static final int DEFAULT_PADDING = 8;
     private static final String NUMBERING_TITLE = "NUM";
     private static final int TEXT_COLOR = Color.BLACK;
     private static final float TEXT_SIZE = 18;
+    private int highlightColor = Color.YELLOW;
+
+    private TableViewCaretaker caretaker = new TableViewCaretaker();
 
     private String numberingHeaderText;
     private boolean isRowNumberingEnabled = false;
     private TableLayout tableLayout;
     private MaterialTextView tableTitle;
     private boolean hasHeader = false;
+    private AppCompatEditText filterText;
+    private MaterialButton filterButton;
 
     public CustomTableView(Context context) {
         super(context);
@@ -51,8 +66,62 @@ public class CustomTableView extends HorizontalScrollView {
         LayoutInflater.from(context).inflate(R.layout.table_view, this, true);
         tableLayout = findViewById(R.id.table_layout);
         tableTitle = findViewById(R.id.table_title);
+        filterText = findViewById(R.id.filter_text);
+        filterButton = findViewById(R.id.filter_button);
         numberingHeaderText = NUMBERING_TITLE;
+
+        filterButton.setOnClickListener(v -> {
+            String query = filterText.getText().toString();
+            if (TextUtils.isEmpty(query)) {
+                clearFilter();
+            } else {
+                filterRows(query);
+            }
+        });
+
         tableLayout.addView(createEmptyHeaderRow(), 0);
+    }
+
+    public void filterRows(String query) {
+        if (caretaker.getMemento() == null) {
+            caretaker.saveState(this);
+        }
+        clearHighlights();
+        for (int i = hasHeader ? 1 : 0; i < tableLayout.getChildCount(); i++) {
+            TableRow row = (TableRow) tableLayout.getChildAt(i);
+            boolean rowContainsQuery = false;
+            for (int j = 0; j < row.getChildCount(); j++) {
+                TextView cell = (TextView) row.getChildAt(j);
+                if (cell.getText().toString().contains(query)) {
+                    rowContainsQuery = true;
+                    highlightCell(cell);
+                }
+            }
+            if (rowContainsQuery) {
+                row.setVisibility(View.VISIBLE);
+            } else {
+                row.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    public void clearFilter() {
+        clearHighlights();
+        caretaker.restoreState(this);
+        caretaker.clearMemento();
+    }
+    private void highlightCell(TextView cell) {
+        cell.setBackgroundColor(highlightColor);
+    }
+
+    public void clearHighlights() {
+        for (int i = 0; i < tableLayout.getChildCount(); i++) {
+            TableRow row = (TableRow) tableLayout.getChildAt(i);
+            for (int j = 0; j < row.getChildCount(); j++) {
+                TextView cell = (TextView) row.getChildAt(j);
+                cell.setBackgroundResource(R.drawable.cell_border); // Reset to default background
+            }
+        }
     }
 
     public void setTitle(String title) {
@@ -66,12 +135,24 @@ public class CustomTableView extends HorizontalScrollView {
 
     public void addRow(String[] cellValues) {
         TableRow row = createTableRow(cellValues);
+        resetRowProperties(row); // Reset properties for new row
         tableLayout.addView(row, tableLayout.getChildCount());
         updateAllRowsToLongestRow();
         adjustColumnWidths();
 
+        // Reset row color to default (assuming default is Color.TRANSPARENT)
+        setRowColor(tableLayout.getChildCount() - 1, Color.TRANSPARENT);
     }
 
+    private void resetRowProperties(TableRow row) {
+        for (int i = 0; i < row.getChildCount(); i++) {
+            TextView cell = (TextView) row.getChildAt(i);
+            cell.setTextColor(TEXT_COLOR);
+            cell.setTypeface(null, Typeface.NORMAL);
+            cell.setTextSize(TEXT_SIZE);
+            cell.setBackgroundResource(R.drawable.cell_border); // Reset to default background
+        }
+    }
     public void removeRow(int position) {
         int actualPosition = hasHeader ? position + 1 : position;
         if (position >= 0 && position < tableLayout.getChildCount()) {
@@ -87,13 +168,12 @@ public class CustomTableView extends HorizontalScrollView {
         TextView cell = new TextView(getContext());
         cell.setText(text);
         cell.setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);
-        cell.setBackgroundResource(R.drawable.cell_border); // Ensure default background
+        cell.setBackgroundResource(R.drawable.cell_border);
         cell.setSingleLine(false);
         cell.setEllipsize(null);
-        cell.setGravity(Gravity.CENTER); // Center the text
+        cell.setGravity(Gravity.CENTER);
         return cell;
     }
-
 
     public void enableRowNumbering() {
         isRowNumberingEnabled = true;
@@ -116,7 +196,6 @@ public class CustomTableView extends HorizontalScrollView {
         }
     }
 
-
     private void updateNumberingCell(TableRow row, int index) {
         TextView numberCell = createNumberingCell(String.valueOf(index));
         TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
@@ -136,7 +215,6 @@ public class CustomTableView extends HorizontalScrollView {
         }
     }
 
-
     private void updateHeaderForNumbering() {
         if (hasHeader) {
             TableRow headerRow = (TableRow) tableLayout.getChildAt(0);
@@ -153,7 +231,6 @@ public class CustomTableView extends HorizontalScrollView {
             }
         }
     }
-
 
     public void setNumberingHeaderText(String text) {
         this.numberingHeaderText = text;
@@ -200,7 +277,6 @@ public class CustomTableView extends HorizontalScrollView {
         }
     }
 
-
     public void setCellTextColor(int row, int column, int color) {
         if (isValidPosition(row, column)) {
             TextView cell = getCellAt(row, column);
@@ -224,6 +300,7 @@ public class CustomTableView extends HorizontalScrollView {
 
     public void insertRow(int position, String[] cellValues) {
         TableRow row = createTableRow(cellValues);
+        resetRowProperties(row); // Reset properties for inserted row
         tableLayout.addView(row, position);
         if (isRowNumberingEnabled) {
             updateRowNumbers();
@@ -231,7 +308,6 @@ public class CustomTableView extends HorizontalScrollView {
         updateAllRowsToLongestRow();
         adjustColumnWidths();
     }
-
     private void updateAllRowsToLongestRow() {
         int longestRowCells = getLongestRowCells();
         for (int i = 0; i < tableLayout.getChildCount(); i++) {
@@ -300,8 +376,6 @@ public class CustomTableView extends HorizontalScrollView {
         }
     }
 
-
-
     public void addHeaderRow(String[] headerValues) {
         hasHeader = true;
         TableRow headerRow = createTableRow(headerValues, true);
@@ -312,8 +386,6 @@ public class CustomTableView extends HorizontalScrollView {
         updateAllRowsToLongestRow();
         adjustColumnWidths();
     }
-
-
 
     public void setCellClickListener(int row, int column, View.OnClickListener listener) {
         if (isValidPosition(row, column)) {
@@ -445,7 +517,6 @@ public class CustomTableView extends HorizontalScrollView {
         return row;
     }
 
-
     private TableRow createEmptyHeaderRow() {
         TableRow headerRow = new TableRow(getContext());
         if (!hasHeader) {
@@ -530,11 +601,30 @@ public class CustomTableView extends HorizontalScrollView {
             rows.add((TableRow) tableLayout.getChildAt(i));
         }
 
-        Collections.sort(rows, (row1, row2) -> {
-            TextView cell1 = (TextView) row1.getChildAt(columnIndex);
-            TextView cell2 = (TextView) row2.getChildAt(columnIndex);
-            return cell1.getText().toString().compareTo(cell2.getText().toString());
-        });
+        boolean isNumericColumn = true;
+        for (TableRow row : rows) {
+            TextView cell = (TextView) row.getChildAt(columnIndex);
+            if (!isNumeric(cell.getText().toString())) {
+                isNumericColumn = false;
+                break;
+            }
+        }
+
+        if (isNumericColumn) {
+            Collections.sort(rows, (row1, row2) -> {
+                TextView cell1 = (TextView) row1.getChildAt(columnIndex);
+                TextView cell2 = (TextView) row2.getChildAt(columnIndex);
+                Integer value1 = Integer.valueOf(cell1.getText().toString());
+                Integer value2 = Integer.valueOf(cell2.getText().toString());
+                return value1.compareTo(value2);
+            });
+        } else {
+            Collections.sort(rows, (row1, row2) -> {
+                TextView cell1 = (TextView) row1.getChildAt(columnIndex);
+                TextView cell2 = (TextView) row2.getChildAt(columnIndex);
+                return cell1.getText().toString().compareTo(cell2.getText().toString());
+            });
+        }
 
         for (int i = 0; i < rows.size(); i++) {
             tableLayout.removeView(rows.get(i));
@@ -542,4 +632,47 @@ public class CustomTableView extends HorizontalScrollView {
         }
     }
 
+    private boolean isNumeric(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+    public TableViewMemento saveToMemento() {
+        return new TableViewMemento(getCurrentState());
+    }
+
+    public void restoreFromMemento(TableViewMemento memento) {
+        restoreState(memento.getState());
+    }
+
+    private List<TableRow> getCurrentState() {
+        List<TableRow> state = new ArrayList<>();
+        for (int i = 0; i < tableLayout.getChildCount(); i++) {
+            TableRow row = (TableRow) tableLayout.getChildAt(i);
+            TableRow rowCopy = new TableRow(getContext());
+            for (int j = 0; j < row.getChildCount(); j++) {
+                TextView cell = (TextView) row.getChildAt(j);
+                TextView cellCopy = new TextView(getContext());
+                cellCopy.setText(cell.getText());
+                cellCopy.setLayoutParams(cell.getLayoutParams());
+                cellCopy.setBackground(cell.getBackground());
+                cellCopy.setTextColor(cell.getTextColors());
+                cellCopy.setTypeface(cell.getTypeface());
+                cellCopy.setTextSize(TypedValue.COMPLEX_UNIT_PX, cell.getTextSize());
+                rowCopy.addView(cellCopy);
+            }
+            state.add(rowCopy);
+        }
+        return state;
+    }
+
+    private void restoreState(List<TableRow> state) {
+        tableLayout.removeAllViews();
+        for (TableRow row : state) {
+            tableLayout.addView(row);
+        }
+    }
 }
