@@ -1,6 +1,7 @@
 package dev.nimrod.customchart;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -19,18 +20,25 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.Collections;
 import java.util.List;
 
+import dev.nimrod.customchart.Util.LineTableView;
+
 public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowViewHolder> {
-    private List<List<String>> data;
+    private List<List<Cell>> data;
     private Context context;
     private boolean hasHeader;
     private boolean isRowNumberingEnabled;
     private boolean[] columnHasHeader;
+    private LineTableView lineTableView;
+    private int[] columnWidths;
+
     private int cellWidth;
     private int cellHeight;
 
-    public TableAdapter(Context context, List<List<String>> data) {
+    public TableAdapter(Context context, List<List<Cell>> data, LineTableView lineTableView) {
         this.context = context;
         this.data = data;
+        this.lineTableView = lineTableView;
+
         measureLargestCell();
     }
 
@@ -38,23 +46,37 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         Paint paint = new Paint();
         paint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14, context.getResources().getDisplayMetrics()));
 
-        int maxWidth = 0;
+        int columnCount = data.isEmpty() ? 0 : data.get(0).size();
+        columnWidths = new int[columnCount];
         int maxHeight = 0;
 
-        for (List<String> row : data) {
-            for (String cell : row) {
+        for (List<Cell> row : data) {
+            for (int i = 0; i < row.size(); i++) {
+                Cell cell = row.get(i);
                 Rect bounds = new Rect();
-                paint.getTextBounds(cell, 0, cell.length(), bounds);
-                maxWidth = Math.max(maxWidth, bounds.width());
+                paint.getTextBounds(cell.getText(), 0, cell.getText().length(), bounds);
+                columnWidths[i] = Math.max(columnWidths[i], bounds.width());
                 maxHeight = Math.max(maxHeight, bounds.height());
             }
         }
 
-        // Add padding to the cell size
         int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, context.getResources().getDisplayMetrics());
-        cellWidth = maxWidth + padding * 2;
+        for (int i = 0; i < columnWidths.length; i++) {
+            columnWidths[i] += padding * 2;
+        }
         cellHeight = maxHeight + padding * 2;
+
+        if (lineTableView != null) {
+            float[] columnWidthsFloat = new float[columnWidths.length];
+            for (int i = 0; i < columnWidths.length; i++) {
+                columnWidthsFloat[i] = columnWidths[i];
+            }
+            lineTableView.setTableDimensions(data.size(), columnWidths.length, columnWidthsFloat, cellHeight);
+            lineTableView.requestLayout(); // Request a new layout
+            lineTableView.invalidate(); // Force redraw
+        }
     }
+
     public void recalculateCellSizes() {
         measureLargestCell();
         notifyDataSetChanged();
@@ -68,14 +90,22 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
     }
 
 
-
-    public void setData(List<List<String>> newData) {
+    public void setData(List<List<Cell>> newData) {
         this.data = newData;
-        notifyDataSetChanged();
+        recalculateCellSizes();
     }
+
+    public void setCellStyle(int row, int column, Cell cell) {
+        if (row >= 0 && row < data.size() && column >= 0 && column < data.get(row).size()) {
+            data.get(row).set(column, cell);
+            recalculateCellSizes();
+        }
+    }
+
     public void setColumnHasHeader(boolean[] columnHasHeader) {
         this.columnHasHeader = columnHasHeader;
     }
+
     public void setHasHeader(boolean hasHeader) {
         this.hasHeader = hasHeader;
     }
@@ -84,22 +114,12 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         this.isRowNumberingEnabled = enabled;
     }
 
-    public void setCellColor(int row, int column, int color) {
-        notifyItemChanged(row, new CellUpdate(column, color, CellUpdate.Type.BACKGROUND));
-    }
 
-    public void setCellTextColor(int row, int column, int color) {
-        notifyItemChanged(row, new CellUpdate(column, color, CellUpdate.Type.TEXT_COLOR));
-    }
-
-    public void setCellTextSize(int row, int column, float size) {
-        notifyItemChanged(row, new CellUpdate(column, size, CellUpdate.Type.TEXT_SIZE));
-    }
     @Override
     public void onBindViewHolder(@NonNull TableRowViewHolder holder, int position) {
-        List<String> rowData = data.get(position);
+        List<Cell> rowData = data.get(position);
         boolean isHeader = hasHeader && position == 0;
-        holder.bind(rowData, isHeader, isRowNumberingEnabled, cellWidth, cellHeight);
+        holder.bind(rowData, isHeader, isRowNumberingEnabled, columnWidths, cellHeight);
     }
 
     @Override
@@ -120,61 +140,28 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
             tableRow = itemView.findViewById(R.id.table_row);
         }
 
-        public void bind(List<String> rowData, boolean isHeader, boolean isNumbered, int cellWidth, int cellHeight) {
+        public void bind(List<Cell> rowData, boolean isHeader, boolean isNumbered, int[] columnWidths, int cellHeight) {
             tableRow.removeAllViews();
             for (int i = 0; i < rowData.size(); i++) {
-                TextView cell = new TextView(tableRow.getContext());
-                cell.setText(rowData.get(i));
-                cell.setPadding(8, 8, 8, 8);
-                cell.setBackgroundResource(isHeader ? R.drawable.header_cell_border : R.drawable.cell_border);
-                cell.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
+                Cell cell = rowData.get(i);
+                TextView textView = new TextView(tableRow.getContext());
+                textView.setText(cell.getText());
+                textView.setPadding(8, 8, 8, 8);
+                textView.setBackgroundColor(cell.getBackgroundColor());
+                textView.setTextColor(cell.getTextColor());
+                textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, cell.getTextSize());
+                textView.setTypeface(cell.getTypeface());
+                textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
+                textView.setSingleLine(true);
 
-                // Ensure single line
-                cell.setSingleLine(true);
-                cell.setEllipsize(null);
-
-                TableRow.LayoutParams params = new TableRow.LayoutParams(cellWidth, cellHeight);
-                cell.setLayoutParams(params);
+                TableRow.LayoutParams params = new TableRow.LayoutParams(columnWidths[i], cellHeight);
+                textView.setLayoutParams(params);
 
                 if (isHeader || (isNumbered && i == 0)) {
-                    cell.setTypeface(null, Typeface.BOLD);
+                    textView.setTypeface(null, Typeface.BOLD);
                 }
-                tableRow.addView(cell);
+                tableRow.addView(textView);
             }
-        }
-
-
-        public void updateCell(CellUpdate update) {
-            if (update.column < tableRow.getChildCount()) {
-                TextView cell = (TextView) tableRow.getChildAt(update.column);
-                switch (update.type) {
-                    case BACKGROUND:
-                        cell.setBackgroundColor((int) update.value);
-                        break;
-                    case TEXT_COLOR:
-                        cell.setTextColor((int) update.value);
-                        break;
-                    case TEXT_SIZE:
-                        cell.setTextSize((float) update.value);
-                        break;
-                }
-            }
-        }
-    }
-
-    private static class CellUpdate {
-        int column;
-        Object value;
-        Type type;
-
-        enum Type {
-            BACKGROUND, TEXT_COLOR, TEXT_SIZE
-        }
-
-        CellUpdate(int column, Object value, Type type) {
-            this.column = column;
-            this.value = value;
-            this.type = type;
         }
     }
 }
