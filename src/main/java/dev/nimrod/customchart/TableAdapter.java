@@ -1,5 +1,6 @@
 package dev.nimrod.customchart;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -27,12 +28,12 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
     private Context context;
     private boolean hasHeader;
     private boolean isRowNumberingEnabled;
-    private boolean[] columnHasHeader;
-    private LineTableView lineTableView;
     private int[] columnWidths;
+    private int cellWidth = ViewGroup.LayoutParams.WRAP_CONTENT;
+    private int cellHeight = ViewGroup.LayoutParams.WRAP_CONTENT;
+    private boolean showFullText = false;
+    private LineTableView lineTableView;
 
-    private int cellWidth;
-    private int cellHeight;
 
     public TableAdapter(Context context, List<List<Cell>> data, LineTableView lineTableView) {
         this.context = context;
@@ -42,6 +43,16 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         measureLargestCell();
     }
 
+    public void setCellSize(int width, int height) {
+        this.cellWidth = width;
+        this.cellHeight = height;
+        recalculateCellSizes();
+    }
+
+    public void setShowFullText(boolean showFull) {
+        this.showFullText = showFull;
+        recalculateCellSizes();
+    }
     private void measureLargestCell() {
         Paint paint = new Paint();
         paint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14, context.getResources().getDisplayMetrics()));
@@ -61,22 +72,23 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         }
 
         int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, context.getResources().getDisplayMetrics());
+
         for (int i = 0; i < columnWidths.length; i++) {
-            columnWidths[i] += padding * 2;
+            columnWidths[i] = Math.max(columnWidths[i] + padding * 2, cellWidth);
         }
-        cellHeight = maxHeight + padding * 2;
+        cellHeight = Math.max(maxHeight + padding * 2, cellHeight);
 
         if (lineTableView != null) {
             float[] columnWidthsFloat = new float[columnWidths.length];
             for (int i = 0; i < columnWidths.length; i++) {
                 columnWidthsFloat[i] = columnWidths[i];
             }
-            lineTableView.setTableDimensions(data.size(), columnWidths.length, columnWidthsFloat, cellHeight);
-            lineTableView.requestLayout(); // Request a new layout
-            lineTableView.invalidate(); // Force redraw
+            int padding1 = context.getResources().getDimensionPixelSize(R.dimen.table_padding);
+            lineTableView.setTableDimensions(data.size(), columnWidths.length, columnWidthsFloat, cellHeight, padding1);
+            lineTableView.requestLayout();
+            lineTableView.invalidate();
         }
     }
-
     public void recalculateCellSizes() {
         measureLargestCell();
         notifyDataSetChanged();
@@ -102,9 +114,9 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         }
     }
 
-    public void setColumnHasHeader(boolean[] columnHasHeader) {
-        this.columnHasHeader = columnHasHeader;
-    }
+//    public void setColumnHasHeader(boolean[] columnHasHeader) {
+//        this.columnHasHeader = columnHasHeader;
+//    }
 
     public void setHasHeader(boolean hasHeader) {
         this.hasHeader = hasHeader;
@@ -119,7 +131,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
     public void onBindViewHolder(@NonNull TableRowViewHolder holder, int position) {
         List<Cell> rowData = data.get(position);
         boolean isHeader = hasHeader && position == 0;
-        holder.bind(rowData, isHeader, isRowNumberingEnabled, columnWidths, cellHeight);
+        holder.bind(rowData, isHeader, isRowNumberingEnabled, columnWidths, cellHeight, showFullText);
     }
 
     @Override
@@ -132,7 +144,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         notifyItemMoved(fromPosition, toPosition);
     }
 
-    public static class TableRowViewHolder extends RecyclerView.ViewHolder {
+    public class TableRowViewHolder extends RecyclerView.ViewHolder {
         private TableRow tableRow;
 
         public TableRowViewHolder(@NonNull View itemView) {
@@ -140,7 +152,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
             tableRow = itemView.findViewById(R.id.table_row);
         }
 
-        public void bind(List<Cell> rowData, boolean isHeader, boolean isNumbered, int[] columnWidths, int cellHeight) {
+        public void bind(List<Cell> rowData, boolean isHeader, boolean isNumbered, int[] columnWidths, int cellHeight, boolean showFullText) {
             tableRow.removeAllViews();
             for (int i = 0; i < rowData.size(); i++) {
                 Cell cell = rowData.get(i);
@@ -152,16 +164,35 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, cell.getTextSize());
                 textView.setTypeface(cell.getTypeface());
                 textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
-                textView.setSingleLine(true);
 
-                TableRow.LayoutParams params = new TableRow.LayoutParams(columnWidths[i], cellHeight);
+                textView.setSingleLine(!cell.isExpanded());
+                if (!cell.isExpanded()) {
+                    textView.setEllipsize(TextUtils.TruncateAt.END);
+                }
+
+                TableRow.LayoutParams params = new TableRow.LayoutParams(columnWidths[i], cell.isExpanded() ? ViewGroup.LayoutParams.WRAP_CONTENT : cellHeight);
                 textView.setLayoutParams(params);
 
                 if (isHeader || (isNumbered && i == 0)) {
                     textView.setTypeface(null, Typeface.BOLD);
                 }
+
+                final int column = i;
+                textView.setOnClickListener(v -> {
+                    cell.setExpanded(!cell.isExpanded());
+                    notifyItemChanged(getAdapterPosition());
+                });
+
                 tableRow.addView(textView);
             }
+        }
+
+        private void showFullTextDialog(Cell cell) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
+            builder.setTitle("Full Text");
+            builder.setMessage(cell.getText());
+            builder.setPositiveButton("OK", null);
+            builder.show();
         }
     }
 }

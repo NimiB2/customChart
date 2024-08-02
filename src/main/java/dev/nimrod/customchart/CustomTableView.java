@@ -85,6 +85,13 @@ public class CustomTableView extends RelativeLayout {
         recyclerView.setAdapter(tableAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
+        int padding = getResources().getDimensionPixelSize(R.dimen.table_padding);
+        recyclerView.setPadding(padding, padding, padding, padding);
+        recyclerView.setClipToPadding(false);
+
+        lineTableView.setPadding(padding, padding, padding, padding);
+//        lineTableView.setClipToPadding(false);
+
         recyclerView.post(() -> {
             int width = recyclerView.getWidth();
             int height = recyclerView.getHeight();
@@ -92,6 +99,7 @@ public class CustomTableView extends RelativeLayout {
             params.width = width;
             params.height = height;
             lineTableView.setLayoutParams(params);
+            lineTableView.setPadding(padding, padding, padding, padding);
             lineTableView.invalidate();
         });
 
@@ -107,6 +115,12 @@ public class CustomTableView extends RelativeLayout {
         setupItemTouchHelper();
     }
 
+    public void setShowFullText(boolean showFull) {
+        tableAdapter.setShowFullText(showFull);
+    }
+    public void setCellSize(int width, int height) {
+        tableAdapter.setCellSize(width, height);
+    }
     public void setTitle(String title) {
         tableTitle.setText(title);
         tableTitle.setVisibility(VISIBLE);

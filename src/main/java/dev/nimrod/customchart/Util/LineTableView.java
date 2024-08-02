@@ -16,6 +16,7 @@ public class LineTableView extends View {
     private int columnCount;
     private float[] columnWidths;
     private float rowHeight;
+    private int padding;
 
     public LineTableView(Context context) {
         super(context);
@@ -30,27 +31,30 @@ public class LineTableView extends View {
     private void init() {
         linePaint = new Paint();
         linePaint.setColor(Color.BLACK);
-        linePaint.setStrokeWidth(5);
+        linePaint.setStrokeWidth(2);
     }
 
-    public void setTableDimensions(int rowCount, int columnCount, float[] columnWidths, float rowHeight) {
+    public void setTableDimensions(int rowCount, int columnCount, float[] columnWidths, float rowHeight, int padding) {
         this.rowCount = rowCount;
         this.columnCount = columnCount;
         this.columnWidths = columnWidths;
         this.rowHeight = rowHeight;
+        this.padding = padding;
         invalidate();
     }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int width = 0;
+        int width = padding * 2;
         if (columnWidths != null) {
             for (float columnWidth : columnWidths) {
                 width += columnWidth;
             }
         }
-        int height = (int) (rowCount * rowHeight);
+        int height = (int) (rowCount * rowHeight) + padding * 2;
         setMeasuredDimension(width, height);
     }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -60,15 +64,16 @@ public class LineTableView extends View {
         }
 
         // Draw horizontal lines
+        float y = padding;
         for (int i = 0; i <= rowCount; i++) {
-            float y = i * rowHeight;
-            canvas.drawLine(0, y, getWidth(), y, linePaint);
+            canvas.drawLine(padding, y, getWidth() - padding, y, linePaint);
+            y += rowHeight;
         }
 
         // Draw vertical lines
-        float x = 0;
+        float x = padding;
         for (int i = 0; i <= columnCount; i++) {
-            canvas.drawLine(x, 0, x, getHeight(), linePaint);
+            canvas.drawLine(x, padding, x, getHeight() - padding, linePaint);
             if (i < columnCount) {
                 x += columnWidths[i];
             }
