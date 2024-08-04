@@ -1,24 +1,12 @@
 package dev.nimrod.customchart;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.HorizontalScrollView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatEditText;
@@ -30,11 +18,8 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-import dev.nimrod.customchart.Util.LineTableView;
 import dev.nimrod.customchart.Util.TableViewCaretaker;
 import dev.nimrod.customchart.Util.TableViewMemento;
 
@@ -53,7 +38,6 @@ public class CustomTableView extends RelativeLayout {
     private TableAdapter tableAdapter;
     private List<List<Cell>> tableData;
     private MaterialTextView tableTitle;
-    private LineTableView lineTableView;
 
 
     public CustomTableView(Context context) {
@@ -78,10 +62,9 @@ public class CustomTableView extends RelativeLayout {
         filterText = findViewById(R.id.filter_text);
         filterButton = findViewById(R.id.filter_button);
         tableTitle = findViewById(R.id.table_title);
-        lineTableView = findViewById(R.id.line_table_view);
 
         tableData = new ArrayList<>();
-        tableAdapter = new TableAdapter(context, tableData,lineTableView);
+        tableAdapter = new TableAdapter(context, tableData);
         recyclerView.setAdapter(tableAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
@@ -89,18 +72,11 @@ public class CustomTableView extends RelativeLayout {
         recyclerView.setPadding(padding, padding, padding, padding);
         recyclerView.setClipToPadding(false);
 
-        lineTableView.setPadding(padding, padding, padding, padding);
 //        lineTableView.setClipToPadding(false);
 
         recyclerView.post(() -> {
             int width = recyclerView.getWidth();
             int height = recyclerView.getHeight();
-            ViewGroup.LayoutParams params = lineTableView.getLayoutParams();
-            params.width = width;
-            params.height = height;
-            lineTableView.setLayoutParams(params);
-            lineTableView.setPadding(padding, padding, padding, padding);
-            lineTableView.invalidate();
         });
 
         filterButton.setOnClickListener(v -> {
@@ -115,12 +91,12 @@ public class CustomTableView extends RelativeLayout {
         setupItemTouchHelper();
     }
 
-    public void setShowFullText(boolean showFull) {
-        tableAdapter.setShowFullText(showFull);
-    }
-    public void setCellSize(int width, int height) {
-        tableAdapter.setCellSize(width, height);
-    }
+//    public void setShowFullText(boolean showFull) {
+//        tableAdapter.setShowFullText(showFull);
+//    }
+//    public void setCellSize(int width, int height) {
+//        tableAdapter.setCellSize(width, height);
+//    }
     public void setTitle(String title) {
         tableTitle.setText(title);
         tableTitle.setVisibility(VISIBLE);
@@ -301,17 +277,17 @@ public class CustomTableView extends RelativeLayout {
     }
 
     public void addHeaderRow(String[] headerValues) {
-    hasHeader = true;
-    List<Cell> headerRow = new ArrayList<>();
-    for (String value : headerValues) {
-        headerRow.add(new Cell(value));
+        hasHeader = true;
+        List<Cell> headerRow = new ArrayList<>();
+        for (String value : headerValues) {
+            headerRow.add(new Cell(value));
+        }
+        if (isRowNumberingEnabled) {
+            headerRow.add(0, new Cell(numberingHeaderText));
+        }
+        tableData.add(0, headerRow);
+        tableAdapter.notifyItemInserted(0);
     }
-    if (isRowNumberingEnabled) {
-        headerRow.add(0, new Cell(numberingHeaderText));
-    }
-    tableData.add(0, headerRow);
-    tableAdapter.notifyItemInserted(0);
-}
 
     public void setHasHeader(boolean hasHeader) {
         this.hasHeader = hasHeader;

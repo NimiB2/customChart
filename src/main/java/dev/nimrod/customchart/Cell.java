@@ -11,6 +11,8 @@ public class Cell {
     private Typeface typeface = Typeface.DEFAULT;
     private boolean expanded = false;
 
+    private int borderDrawableResId = R.drawable.cell_border;
+
 
     public Cell(String text) {
         this.text = text;
@@ -33,5 +35,14 @@ public class Cell {
 
     public void setExpanded(boolean expanded) {
         this.expanded = expanded;
+    }
+
+    public int getBorderDrawableResId() {
+        return borderDrawableResId;
+    }
+
+    public Cell setBorderDrawableResId(int borderDrawableResId) {
+        this.borderDrawableResId = borderDrawableResId;
+        return this;
     }
 }
