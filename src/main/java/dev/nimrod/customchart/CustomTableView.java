@@ -2,10 +2,8 @@ package dev.nimrod.customchart;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
@@ -25,8 +23,6 @@ import dev.nimrod.customchart.Util.TableViewMemento;
 
 public class CustomTableView extends RelativeLayout {
 
-    private boolean[] columnHasHeader;
-
     private TableViewCaretaker caretaker = new TableViewCaretaker();
 
     private String numberingHeaderText;
@@ -36,9 +32,8 @@ public class CustomTableView extends RelativeLayout {
     private MaterialButton filterButton;
     private RecyclerView recyclerView;
     private TableAdapter tableAdapter;
-    private List<List<Cell>> tableData;
+    private List<Row> tableData;
     private MaterialTextView tableTitle;
-
 
     public CustomTableView(Context context) {
         super(context);
@@ -64,39 +59,23 @@ public class CustomTableView extends RelativeLayout {
         tableTitle = findViewById(R.id.table_title);
 
         tableData = new ArrayList<>();
-        tableAdapter = new TableAdapter(context, tableData);
+        tableAdapter = new TableAdapter(context, new ArrayList<>());
         recyclerView.setAdapter(tableAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        recyclerView.setLayoutManager(new LinearLayoutManager(context) {
+            @Override
+            public boolean canScrollVertically() {
+                return true;
+            }
 
-        int padding = getResources().getDimensionPixelSize(R.dimen.table_padding);
-        recyclerView.setPadding(padding, padding, padding, padding);
-        recyclerView.setClipToPadding(false);
-
-//        lineTableView.setClipToPadding(false);
-
-        recyclerView.post(() -> {
-            int width = recyclerView.getWidth();
-            int height = recyclerView.getHeight();
-        });
-
-        filterButton.setOnClickListener(v -> {
-            String query = filterText.getText().toString();
-            if (TextUtils.isEmpty(query)) {
-                clearFilter();
-            } else {
-                filterRows(query);
+            @Override
+            public boolean canScrollHorizontally() {
+                return true;
             }
         });
 
         setupItemTouchHelper();
     }
 
-//    public void setShowFullText(boolean showFull) {
-//        tableAdapter.setShowFullText(showFull);
-//    }
-//    public void setCellSize(int width, int height) {
-//        tableAdapter.setCellSize(width, height);
-//    }
     public void setTitle(String title) {
         tableTitle.setText(title);
         tableTitle.setVisibility(VISIBLE);
@@ -107,88 +86,90 @@ public class CustomTableView extends RelativeLayout {
     }
 
     public void addRow(String[] cellValues) {
-        List<Cell> rowData = new ArrayList<>();
+        List<Cell> cellList = new ArrayList<>();
         for (String value : cellValues) {
-            rowData.add(new Cell(value));
+            cellList.add(new Cell(value));
         }
-        tableData.add(rowData);
+        Row newRow = new Row(cellList);
+        tableData.add(newRow);
+
+        tableAdapter.setData(tableData);
         tableAdapter.notifyItemInserted(tableData.size() - 1);
-        tableAdapter.recalculateCellSizes();
     }
 
     public void removeRow(int position) {
         if (position >= 0 && position < tableData.size()) {
             tableData.remove(position);
+            tableAdapter.setData(tableData);
             tableAdapter.notifyItemRemoved(position);
             if (isRowNumberingEnabled) {
                 updateRowNumbers();
             }
-            tableAdapter.recalculateCellSizes();
         }
     }
-    private int getMaxColumns() {
-        int maxColumns = 0;
-        for (List<Cell> row : tableData) {
-            maxColumns = Math.max(maxColumns, row.size());
-        }
-        return maxColumns;
-    }
+
     public void removeColumn(int column) {
-        for (List<Cell> row : tableData) {
-            if (column >= 0 && column < row.size()) {
-                row.remove(column);
+        for (Row row : tableData) {
+            if (column >= 0 && column < row.getCellCount()) {
+                row.removeCell(column);
             }
         }
+        tableAdapter.setData(tableData);
         tableAdapter.notifyDataSetChanged();
     }
+
     public void setCellColor(int row, int column, int color) {
         if (isValidPosition(row, column)) {
-            Cell cell = tableData.get(row).get(column);
+            Cell cell = tableData.get(row).getCell(column);
             cell.setBackgroundColor(color);
-            tableAdapter.notifyItemChanged(row);
+            tableAdapter.updateCell(row, column, cell);
         }
     }
 
     public void setCellTextColor(int row, int column, int color) {
         if (isValidPosition(row, column)) {
-            Cell cell = tableData.get(row).get(column);
+            Cell cell = tableData.get(row).getCell(column);
             cell.setTextColor(color);
-            tableAdapter.notifyItemChanged(row);
+            tableAdapter.updateCell(row, column, cell);
+        }
+    }
+
+    public void setCellTypeface(int row, int column, Typeface typeface) {
+        if (isValidPosition(row, column)) {
+            Cell cell = tableData.get(row).getCell(column);
+            cell.setTypeface(typeface);
+            tableAdapter.updateCell(row, column, cell);
         }
     }
 
     public void setCellTextSize(int row, int column, float size) {
         if (isValidPosition(row, column)) {
-            Cell cell = tableData.get(row).get(column);
+            Cell cell = tableData.get(row).getCell(column);
             cell.setTextSize(size);
-            tableAdapter.notifyItemChanged(row);
+            tableAdapter.updateCellTextSize(row, column, size);
         }
     }
-    public void setCellTypeface(int row, int column, Typeface typeface) {
-        if (row >= 0 && row < tableData.size() && column >= 0 && column < tableData.get(row).size()) {
-            Cell cell = tableData.get(row).get(column);
-            cell.setTypeface(typeface);
-            tableAdapter.setCellStyle(row, column, cell);
-        }
-    }
-
     public void setRowColor(int row, int color) {
         if (row >= 0 && row < tableData.size()) {
-            for (Cell cell : tableData.get(row)) {
+            Row currentRow = tableData.get(row);
+            for (int i = 0; i < currentRow.getCellCount(); i++) {
+                Cell cell = currentRow.getCell(i);
                 cell.setBackgroundColor(color);
+                tableAdapter.updateCell(row, i, cell);
             }
-            tableAdapter.notifyItemChanged(row);
         }
     }
 
     public void setColumnColor(int column, int color) {
         for (int i = 0; i < tableData.size(); i++) {
-            if (column >= 0 && column < tableData.get(i).size()) {
-                tableData.get(i).get(column).setBackgroundColor(color);
+            if (isValidPosition(i, column)) {
+                Cell cell = tableData.get(i).getCell(column);
+                cell.setBackgroundColor(color);
+                tableAdapter.updateCell(i, column, cell);
             }
         }
-        tableAdapter.notifyDataSetChanged();
     }
+
     private void setupItemTouchHelper() {
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.Callback() {
             @Override
@@ -215,16 +196,17 @@ public class CustomTableView extends RelativeLayout {
 
         itemTouchHelper.attachToRecyclerView(recyclerView);
     }
+
     public void filterRows(String query) {
         if (caretaker.getMemento() == null) {
             caretaker.saveState(this);
         }
-        List<List<Cell>> filteredData = new ArrayList<>();
+        List<Row> filteredData = new ArrayList<>();
         for (int i = hasHeader ? 1 : 0; i < tableData.size(); i++) {
-            List<Cell> row = tableData.get(i);
+            Row row = tableData.get(i);
             boolean rowContainsQuery = false;
-            for (Cell cell : row) {
-                if (cell.getText().contains(query)) {
+            for (int j = 0; j < row.getCellCount(); j++) {
+                if (row.getCell(j).getText().contains(query)) {
                     rowContainsQuery = true;
                     break;
                 }
@@ -234,10 +216,13 @@ public class CustomTableView extends RelativeLayout {
             }
         }
         tableAdapter.setData(filteredData);
-    }    public void clearFilter() {
+    }
+
+    public void clearFilter() {
         caretaker.restoreState(this);
         caretaker.clearMemento();
     }
+
     public void enableRowNumbering() {
         isRowNumberingEnabled = true;
         updateRowNumbers();
@@ -250,42 +235,58 @@ public class CustomTableView extends RelativeLayout {
 
     private void updateRowNumbers() {
         for (int i = hasHeader ? 1 : 0; i < tableData.size(); i++) {
-            List<Cell> row = tableData.get(i);
+            Row row = tableData.get(i);
             if (isRowNumberingEnabled) {
-                if (row.size() > 0 && !row.get(0).getText().equals(String.valueOf(i))) {
-                    row.add(0, new Cell(String.valueOf(i)));
+                if (row.getCellCount() > 0) {
+                    if (i == 0 && hasHeader) {
+                        row.setCell(0, new Cell(numberingHeaderText));
+                    } else {
+                        if (row.getCell(0).getText().equals(String.valueOf(i - (hasHeader ? 1 : 0)))) {
+                            continue; // Skip if the numbering is already correct
+                        }
+                        row.setCell(0, new Cell(String.valueOf(i - (hasHeader ? 1 : 0))));
+                    }
                 } else {
-                    row.get(0).setText(String.valueOf(i));
+                    row.addCell(new Cell(String.valueOf(i - (hasHeader ? 1 : 0))));
                 }
             } else {
-                if (row.size() > 0) {
-                    row.remove(0);
+                if (row.getCellCount() > 0 && (i == 0 || row.getCell(0).getText().matches("\\d+"))) {
+                    row.removeCell(0);
                 }
             }
         }
+        tableAdapter.setData(tableData);
         tableAdapter.notifyDataSetChanged();
     }
-
+    public void setCellText(int row, int column, String text) {
+        if (isValidPosition(row, column)) {
+            Cell cell = tableData.get(row).getCell(column);
+            cell.setText(text);
+            tableAdapter.updateCell(row, column, cell);
+        }
+    }
 
     public void setNumberingHeaderText(String text) {
         this.numberingHeaderText = text;
         if (isRowNumberingEnabled && hasHeader) {
-            List<Cell> headerRow = tableData.get(0);
-            headerRow.get(0).setText(numberingHeaderText);
+            Row headerRow = tableData.get(0);
+            headerRow.getCell(0).setText(numberingHeaderText);
             tableAdapter.notifyItemChanged(0);
         }
     }
 
     public void addHeaderRow(String[] headerValues) {
         hasHeader = true;
-        List<Cell> headerRow = new ArrayList<>();
+        List<Cell> headerCells = new ArrayList<>();
         for (String value : headerValues) {
-            headerRow.add(new Cell(value));
+            headerCells.add(new Cell(value));
         }
         if (isRowNumberingEnabled) {
-            headerRow.add(0, new Cell(numberingHeaderText));
+            headerCells.add(0, new Cell(numberingHeaderText));
         }
+        Row headerRow = new Row(headerCells);
         tableData.add(0, headerRow);
+        tableAdapter.setData(tableData);
         tableAdapter.notifyItemInserted(0);
     }
 
@@ -296,13 +297,12 @@ public class CustomTableView extends RelativeLayout {
 
     public void setRowNumberingEnabled(boolean enabled) {
         this.isRowNumberingEnabled = enabled;
-        tableAdapter.setRowNumberingEnabled(enabled);
         updateRowNumbers();
+        tableAdapter.setRowNumberingEnabled(enabled);
         tableAdapter.recalculateCellSizes();
     }
-
     private boolean isValidPosition(int row, int column) {
-        return row >= 0 && row < tableData.size() && column >= 0 && column < tableData.get(row).size();
+        return row >= 0 && row < tableData.size() && column >= 0 && column < tableData.get(row).getCellCount();
     }
 
     public TableViewMemento saveToMemento() {
@@ -321,19 +321,20 @@ public class CustomTableView extends RelativeLayout {
         tableAdapter.notifyDataSetChanged();
     }
 
-    private List<List<Cell>> deepCopyTableData() {
-        List<List<Cell>> copy = new ArrayList<>();
-        for (List<Cell> row : tableData) {
-            List<Cell> rowCopy = new ArrayList<>();
-            for (Cell cell : row) {
+    private List<Row> deepCopyTableData() {
+        List<Row> copy = new ArrayList<>();
+        for (Row row : tableData) {
+            List<Cell> cellsCopy = new ArrayList<>();
+            for (int i = 0; i < row.getCellCount(); i++) {
+                Cell cell = row.getCell(i);
                 Cell cellCopy = new Cell(cell.getText());
                 cellCopy.setBackgroundColor(cell.getBackgroundColor());
                 cellCopy.setTextColor(cell.getTextColor());
                 cellCopy.setTextSize(cell.getTextSize());
                 cellCopy.setTypeface(cell.getTypeface());
-                rowCopy.add(cellCopy);
+                cellsCopy.add(cellCopy);
             }
-            copy.add(rowCopy);
+            copy.add(new Row(cellsCopy));
         }
         return copy;
     }

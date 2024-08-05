@@ -1,26 +1,20 @@
 package dev.nimrod.customchart.Util;
 
-import android.util.TypedValue;
-import android.widget.TableRow;
-import android.widget.TextView;
-
-import java.util.ArrayList;
 import java.util.List;
-
-import dev.nimrod.customchart.Cell;
+import dev.nimrod.customchart.Row;
 
 public class TableViewMemento {
-    private final List<List<Cell>> state;
+    private final List<Row> state;
     private final boolean hasHeader;
     private final boolean isRowNumberingEnabled;
 
-    public TableViewMemento(List<List<Cell>> state, boolean hasHeader, boolean isRowNumberingEnabled) {
+    public TableViewMemento(List<Row> state, boolean hasHeader, boolean isRowNumberingEnabled) {
         this.state = state;
         this.hasHeader = hasHeader;
         this.isRowNumberingEnabled = isRowNumberingEnabled;
     }
 
-    public List<List<Cell>> getState() {
+    public List<Row> getState() {
         return state;
     }
 

@@ -7,12 +7,9 @@ public class Cell {
     private String text;
     private int backgroundColor = Color.TRANSPARENT;
     private int textColor = Color.BLACK;
-    private float textSize = 18f;
+    private float textSize = 20f;
     private Typeface typeface = Typeface.DEFAULT;
-    private boolean expanded = false;
-
     private int borderDrawableResId = R.drawable.cell_border;
-
 
     public Cell(String text) {
         this.text = text;
@@ -29,18 +26,9 @@ public class Cell {
     public void setTextSize(float textSize) { this.textSize = textSize; }
     public Typeface getTypeface() { return typeface; }
     public void setTypeface(Typeface typeface) { this.typeface = typeface; }
-    public boolean isExpanded() {
-        return expanded;
-    }
-
-    public void setExpanded(boolean expanded) {
-        this.expanded = expanded;
-    }
-
     public int getBorderDrawableResId() {
         return borderDrawableResId;
     }
-
     public Cell setBorderDrawableResId(int borderDrawableResId) {
         this.borderDrawableResId = borderDrawableResId;
         return this;
