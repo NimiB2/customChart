@@ -72,12 +72,19 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         }
     }
 
-    private void measureRow(Row row, Paint paint) {
+    public void measureRow(Row row, Paint paint) {
         int maxRowHeight = 0;
 
         for (int columnIndex = 0; columnIndex < row.getCellCount(); columnIndex++) {
             Cell cell = row.getCell(columnIndex);
+            // Set the paint's typeface to bold if it's a header
+            if (hasHeader && columnIndex == 0) {
+                paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+            } else {
+                paint.setTypeface(cell.getTypeface());
+            }
             paint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, cell.getTextSize(), context.getResources().getDisplayMetrics()));
+
 
             Rect bounds = new Rect();
             paint.getTextBounds(cell.getText(), 0, cell.getText().length(), bounds);
@@ -90,6 +97,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         }
 
         row.setHeight(maxRowHeight);
+        notifyDataSetChanged();
     }
 
     public void updateCell(int rowIndex, int columnIndex, Cell newCell) {
@@ -180,6 +188,8 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         private TextView createCellView(Cell cell, boolean isHeader, boolean isRowNumber) {
             TextView textView = new TextView(tableRow.getContext());
             textView.setText(cell.getText());
+
+
             textView.setPadding(HORIZONTAL_PADDING, VERTICAL_PADDING, HORIZONTAL_PADDING, VERTICAL_PADDING);
             textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, cell.getTextSize());
             Drawable borderDrawable = ContextCompat.getDrawable(context, cell.getBorderDrawableResId()).mutate();
@@ -190,7 +200,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
 
             textView.setTextColor(cell.getTextColor());
             textView.setTypeface(cell.getTypeface());
-            textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
+            textView.setGravity(Gravity.CENTER);
 
             textView.setSingleLine(true);
             textView.setEllipsize(null);

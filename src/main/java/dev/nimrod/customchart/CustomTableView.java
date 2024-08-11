@@ -1,6 +1,7 @@
 package dev.nimrod.customchart;
 
 import android.content.Context;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -22,10 +23,7 @@ import dev.nimrod.customchart.Util.TableViewCaretaker;
 import dev.nimrod.customchart.Util.TableViewMemento;
 
 public class CustomTableView extends RelativeLayout {
-
-    private TableViewCaretaker caretaker = new TableViewCaretaker();
-
-    private String numberingHeaderText;
+    private String numberingHeaderText = "NUMB";
     private boolean isNumberColumnVisible = true;
     private boolean hasHeader = false;
     private AppCompatEditText filterText;
@@ -96,6 +94,7 @@ public class CustomTableView extends RelativeLayout {
         Row newRow = new Row(cellList);
         tableData.add(newRow);
 
+        updateRowNumbers(); // Ensure numbers are correctly set
         tableAdapter.setData(tableData);
         tableAdapter.notifyItemInserted(tableData.size() - 1);
     }
@@ -200,31 +199,31 @@ public class CustomTableView extends RelativeLayout {
         itemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
-    public void filterRows(String query) {
-        if (caretaker.getMemento() == null) {
-            caretaker.saveState(this);
-        }
-        List<Row> filteredData = new ArrayList<>();
-        for (int i = hasHeader ? 1 : 0; i < tableData.size(); i++) {
-            Row row = tableData.get(i);
-            boolean rowContainsQuery = false;
-            for (int j = 0; j < row.getCellCount(); j++) {
-                if (row.getCell(j).getText().contains(query)) {
-                    rowContainsQuery = true;
-                    break;
-                }
-            }
-            if (rowContainsQuery) {
-                filteredData.add(row);
-            }
-        }
-        tableAdapter.setData(filteredData);
-    }
-
-    public void clearFilter() {
-        caretaker.restoreState(this);
-        caretaker.clearMemento();
-    }
+//    public void filterRows(String query) {
+//        if (caretaker.getMemento() == null) {
+//            caretaker.saveState(this);
+//        }
+//        List<Row> filteredData = new ArrayList<>();
+//        for (int i = hasHeader ? 1 : 0; i < tableData.size(); i++) {
+//            Row row = tableData.get(i);
+//            boolean rowContainsQuery = false;
+//            for (int j = 0; j < row.getCellCount(); j++) {
+//                if (row.getCell(j).getText().contains(query)) {
+//                    rowContainsQuery = true;
+//                    break;
+//                }
+//            }
+//            if (rowContainsQuery) {
+//                filteredData.add(row);
+//            }
+//        }
+//        tableAdapter.setData(filteredData);
+//    }
+//
+//    public void clearFilter() {
+//        caretaker.restoreState(this);
+//        caretaker.clearMemento();
+//    }
 
     public void showNumberColumn() {
         if (!isNumberColumnVisible) {
@@ -267,32 +266,72 @@ public class CustomTableView extends RelativeLayout {
 
     public void setNumberingHeaderText(String text) {
         this.numberingHeaderText = text;
-        if (isNumberColumnVisible && hasHeader) {
+        if (isNumberColumnVisible && hasHeader && !tableData.isEmpty()) {
             Row headerRow = tableData.get(0);
-            headerRow.getCell(0).setText(numberingHeaderText);
+            Cell numberingCell = headerRow.getCell(0);
+            numberingCell.setText(numberingHeaderText);
+            tableAdapter.measureRow(headerRow, new Paint()); // Recalculate the width based on the new text
             tableAdapter.notifyItemChanged(0);
         }
     }
 
+
     public void addHeaderRow(String[] headerValues) {
         hasHeader = true;
         List<Cell> headerCells = new ArrayList<>();
+
         for (String value : headerValues) {
-            headerCells.add(new Cell(value));
+            Cell headerCell = new Cell(value);
+            headerCell.setBorderDrawableResId(R.drawable.header_cell_border); // Use the header cell frame
+            headerCell.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD)); // Set bold font for header
+            headerCells.add(headerCell);
         }
+
         if (isNumberColumnVisible) {
-            headerCells.add(0, new Cell(numberingHeaderText));
+            Cell numberHeaderCell = new Cell(numberingHeaderText);
+            numberHeaderCell.setBorderDrawableResId(R.drawable.header_cell_border);
+            headerCells.add(0, numberHeaderCell);
         }
+
         Row headerRow = new Row(headerCells);
         tableData.add(0, headerRow);
+
+        if (tableData.size() > 1) {
+            Row rowBelowHeader = tableData.get(1);
+            for (int i = 0; i < rowBelowHeader.getCellCount(); i++) {
+                Cell cell = rowBelowHeader.getCell(i);
+                cell.setBorderDrawableResId(R.drawable.cell_border); // Set regular cell border
+                cell.setTypeface(Typeface.DEFAULT); // Set regular font
+
+                if (i == 0 && isNumberColumnVisible) {
+                    cell.setText("0"); // Set numbering cell to "0"
+                }
+            }
+        }
+
         tableAdapter.setData(tableData);
         tableAdapter.notifyItemInserted(0);
+        tableAdapter.notifyItemChanged(1);
     }
 
     public void setHasHeader(boolean hasHeader) {
         this.hasHeader = hasHeader;
+
+        if (!tableData.isEmpty()) {
+            Row firstRow = tableData.get(0);
+            int borderDrawableResId = hasHeader ? R.drawable.header_cell_border : R.drawable.cell_border;
+
+            for (int i = 0; i < firstRow.getCellCount(); i++) {
+                Cell cell = firstRow.getCell(i);
+                cell.setBorderDrawableResId(borderDrawableResId);
+            }
+
+            tableAdapter.setData(tableData);
+            tableAdapter.notifyItemChanged(0); // Refresh the first row to apply the new border
+        }
         tableAdapter.setHasHeader(hasHeader);
     }
+
 
     private boolean isValidPosition(int row, int column) {
         return row >= 0 && row < tableData.size() && column >= 0 && column < tableData.get(row).getCellCount();
