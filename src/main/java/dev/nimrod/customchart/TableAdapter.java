@@ -30,7 +30,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
     private List<Row> rows;
     private Context context;
     private boolean hasHeader;
-    private boolean isRowNumberingEnabled;
+    private boolean isNumberColumnVisible = true;
     private int[] maxColumnWidths;
     private int minCellHeight;
 
@@ -47,6 +47,10 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         this.maxColumnWidths = new int[maxColumns];
 
         measureCells();
+    }
+    public void setNumberColumnVisible(boolean visible) {
+        this.isNumberColumnVisible = visible;
+        recalculateCellSizes();
     }
 
     private int getMaxColumns() {
@@ -124,7 +128,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
     public void onBindViewHolder(@NonNull TableRowViewHolder holder, int position) {
         Row row = rows.get(position);
         boolean isHeader = hasHeader && position == 0;
-        holder.bind(row, isHeader, position);
+        holder.bind(row, isHeader, position, isNumberColumnVisible);
     }
 
     @Override
@@ -141,9 +145,6 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         this.hasHeader = hasHeader;
     }
 
-    public void setRowNumberingEnabled(boolean enabled) {
-        this.isRowNumberingEnabled = enabled;
-    }
 
     public void moveItem(int fromPosition, int toPosition) {
         Collections.swap(rows, fromPosition, toPosition);
@@ -158,13 +159,16 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
             tableRow = itemView.findViewById(R.id.table_row);
         }
 
-        public void bind(Row row, boolean isHeader, int rowPosition) {
+        public void bind(Row row, boolean isHeader, int rowPosition, boolean isNumberColumnVisible) {
             tableRow.removeAllViews();
             int rowHeight = row.getHeight();
 
             for (int i = 0; i < row.getCellCount(); i++) {
+                if (i == 0 && !isNumberColumnVisible) {
+                    continue;
+                }
                 Cell cell = row.getCell(i);
-                TextView textView = createCellView(cell, isHeader, i == 0 && isRowNumberingEnabled);
+                TextView textView = createCellView(cell, isHeader, i == 0);
                 TableRow.LayoutParams params = new TableRow.LayoutParams(maxColumnWidths[i], rowHeight);
                 textView.setLayoutParams(params);
                 tableRow.addView(textView);

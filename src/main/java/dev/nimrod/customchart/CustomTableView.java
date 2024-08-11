@@ -26,7 +26,7 @@ public class CustomTableView extends RelativeLayout {
     private TableViewCaretaker caretaker = new TableViewCaretaker();
 
     private String numberingHeaderText;
-    private boolean isRowNumberingEnabled = false;
+    private boolean isNumberColumnVisible = true;
     private boolean hasHeader = false;
     private AppCompatEditText filterText;
     private MaterialButton filterButton;
@@ -87,6 +87,9 @@ public class CustomTableView extends RelativeLayout {
 
     public void addRow(String[] cellValues) {
         List<Cell> cellList = new ArrayList<>();
+
+        cellList.add(new Cell(String.valueOf(tableData.size() + (hasHeader ? 0 : 1))));
+
         for (String value : cellValues) {
             cellList.add(new Cell(value));
         }
@@ -102,7 +105,7 @@ public class CustomTableView extends RelativeLayout {
             tableData.remove(position);
             tableAdapter.setData(tableData);
             tableAdapter.notifyItemRemoved(position);
-            if (isRowNumberingEnabled) {
+            if (isNumberColumnVisible) {
                 updateRowNumbers();
             }
         }
@@ -223,41 +226,37 @@ public class CustomTableView extends RelativeLayout {
         caretaker.clearMemento();
     }
 
-    public void enableRowNumbering() {
-        isRowNumberingEnabled = true;
-        updateRowNumbers();
+    public void showNumberColumn() {
+        if (!isNumberColumnVisible) {
+            isNumberColumnVisible = true;
+            updateRowNumbers();
+        }
     }
 
-    public void disableRowNumbering() {
-        isRowNumberingEnabled = false;
-        updateRowNumbers();
+    public void hideNumberColumn() {
+        if (isNumberColumnVisible) {
+            isNumberColumnVisible = false;
+            updateRowNumbers();
+        }
     }
 
     private void updateRowNumbers() {
         for (int i = hasHeader ? 1 : 0; i < tableData.size(); i++) {
             Row row = tableData.get(i);
-            if (isRowNumberingEnabled) {
-                if (row.getCellCount() > 0) {
-                    if (i == 0 && hasHeader) {
-                        row.setCell(0, new Cell(numberingHeaderText));
-                    } else {
-                        if (row.getCell(0).getText().equals(String.valueOf(i - (hasHeader ? 1 : 0)))) {
-                            continue; // Skip if the numbering is already correct
-                        }
-                        row.setCell(0, new Cell(String.valueOf(i - (hasHeader ? 1 : 0))));
-                    }
+            if (row.getCellCount() > 0) {
+                if (i == 0 && hasHeader) {
+                    row.setCell(0, new Cell(numberingHeaderText));
                 } else {
-                    row.addCell(new Cell(String.valueOf(i - (hasHeader ? 1 : 0))));
+                    row.setCell(0, new Cell(String.valueOf(i - (hasHeader ? 1 : 0))));
                 }
             } else {
-                if (row.getCellCount() > 0 && (i == 0 || row.getCell(0).getText().matches("\\d+"))) {
-                    row.removeCell(0);
-                }
+                row.addCell(new Cell(String.valueOf(i - (hasHeader ? 1 : 0))));
             }
         }
-        tableAdapter.setData(tableData);
+        tableAdapter.setNumberColumnVisible(isNumberColumnVisible);
         tableAdapter.notifyDataSetChanged();
     }
+
     public void setCellText(int row, int column, String text) {
         if (isValidPosition(row, column)) {
             Cell cell = tableData.get(row).getCell(column);
@@ -268,7 +267,7 @@ public class CustomTableView extends RelativeLayout {
 
     public void setNumberingHeaderText(String text) {
         this.numberingHeaderText = text;
-        if (isRowNumberingEnabled && hasHeader) {
+        if (isNumberColumnVisible && hasHeader) {
             Row headerRow = tableData.get(0);
             headerRow.getCell(0).setText(numberingHeaderText);
             tableAdapter.notifyItemChanged(0);
@@ -281,7 +280,7 @@ public class CustomTableView extends RelativeLayout {
         for (String value : headerValues) {
             headerCells.add(new Cell(value));
         }
-        if (isRowNumberingEnabled) {
+        if (isNumberColumnVisible) {
             headerCells.add(0, new Cell(numberingHeaderText));
         }
         Row headerRow = new Row(headerCells);
@@ -295,28 +294,22 @@ public class CustomTableView extends RelativeLayout {
         tableAdapter.setHasHeader(hasHeader);
     }
 
-    public void setRowNumberingEnabled(boolean enabled) {
-        this.isRowNumberingEnabled = enabled;
-        updateRowNumbers();
-        tableAdapter.setRowNumberingEnabled(enabled);
-        tableAdapter.recalculateCellSizes();
-    }
     private boolean isValidPosition(int row, int column) {
         return row >= 0 && row < tableData.size() && column >= 0 && column < tableData.get(row).getCellCount();
     }
 
     public TableViewMemento saveToMemento() {
-        return new TableViewMemento(deepCopyTableData(), hasHeader, isRowNumberingEnabled);
+        return new TableViewMemento(deepCopyTableData(), hasHeader, isNumberColumnVisible);
     }
 
     public void restoreFromMemento(TableViewMemento memento) {
         this.tableData = memento.getState();
         this.hasHeader = memento.isHasHeader();
-        this.isRowNumberingEnabled = memento.isRowNumberingEnabled();
+        this.isNumberColumnVisible = memento.isRowNumberingEnabled();
 
         tableAdapter.setData(this.tableData);
         tableAdapter.setHasHeader(this.hasHeader);
-        tableAdapter.setRowNumberingEnabled(this.isRowNumberingEnabled);
+        tableAdapter.setNumberColumnVisible(this.isNumberColumnVisible);
 
         tableAdapter.notifyDataSetChanged();
     }
