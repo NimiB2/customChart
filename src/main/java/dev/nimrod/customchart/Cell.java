@@ -11,6 +11,7 @@ public class Cell {
     private Typeface typeface = Typeface.DEFAULT;
     private int borderDrawableResId = R.drawable.cell_border;
 
+
     public Cell(String text) {
         this.text = text;
     }

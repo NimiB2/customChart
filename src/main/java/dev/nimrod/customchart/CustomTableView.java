@@ -1,15 +1,23 @@
 package dev.nimrod.customchart;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatEditText;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -287,32 +295,140 @@ public class CustomTableView extends RelativeLayout {
     }
 
     private void setupItemTouchHelper() {
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.Callback() {
-            @Override
-            public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-                return makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
-            }
+        ItemTouchHelper.SimpleCallback callback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            private int dragFrom = -1;
+            private int dragTo = -1;
 
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
                 int fromPosition = viewHolder.getAdapterPosition();
                 int toPosition = target.getAdapterPosition();
-                if (hasHeader && (fromPosition == 0 || toPosition == 0)) {
-                    return false;
+
+                if (dragFrom == -1) {
+                    dragFrom = fromPosition;
                 }
-                tableAdapter.moveItem(fromPosition, toPosition);
+                dragTo = toPosition;
+
+                if (hasHeader && (fromPosition == 0 || toPosition == 0)) {
+                    return false; // Still prevent moving the header row
+                }
+
+                Collections.swap(tableData, fromPosition, toPosition);
+                tableAdapter.notifyItemMoved(fromPosition, toPosition);
                 return true;
+            }
+            @Override
+            public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+                if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
+                    viewHolder.itemView.setElevation(8f); // Increase elevation when dragging starts
+                    viewHolder.itemView.setBackgroundResource(android.R.color.holo_green_light);
+
+                }
+                super.onSelectedChanged(viewHolder, actionState);
+            }
+
+            @Override
+            public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                super.clearView(recyclerView, viewHolder);
+
+                viewHolder.itemView.setElevation(0f); // Reset elevation when dragging ends
+                viewHolder.itemView.setBackgroundResource(android.R.color.transparent);
+
+                if (dragFrom != -1 && dragTo != -1 && dragFrom != dragTo) {
+                    updateRowNumbers();
+                    showToast("Rows swapped: " + (dragFrom + 1) + " and " + (dragTo + 1));
+                }
+
+                dragFrom = dragTo = -1;
             }
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                // Do nothing
-            }
-        });
+                int position = viewHolder.getAdapterPosition();
+                if (hasHeader && position == 0) {
+                    // Prevent swiping the header
+                    tableAdapter.notifyItemChanged(0);
+                    return;
+                }
 
+                if (direction == ItemTouchHelper.RIGHT) {
+                    showDeleteConfirmationDialog(position);
+                } else if (direction == ItemTouchHelper.LEFT) {
+                    highlightRow(position);
+                }
+            }
+
+            @Override
+            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                    View itemView = viewHolder.itemView;
+                    ColorDrawable background;
+                    Drawable icon;
+                    int iconMargin = (itemView.getHeight() - 40) / 2; // Assuming icon size of 40dp
+
+                    if (dX > 0) { // Swiping to the right (delete)
+                        background = new ColorDrawable(Color.RED);
+                        icon = ContextCompat.getDrawable(getContext(), android.R.drawable.ic_menu_delete);
+                        background.setBounds(itemView.getLeft(), itemView.getTop(), (int) dX, itemView.getBottom());
+                        icon.setBounds(itemView.getLeft() + iconMargin, itemView.getTop() + iconMargin,
+                                itemView.getLeft() + iconMargin + 40, itemView.getBottom() - iconMargin);
+                    } else if (dX < 0) { // Swiping to the left (highlight)
+                        background = new ColorDrawable(Color.YELLOW);
+                        icon = ContextCompat.getDrawable(getContext(), android.R.drawable.btn_star);
+                        background.setBounds(itemView.getRight() + (int) dX, itemView.getTop(), itemView.getRight(), itemView.getBottom());
+                        icon.setBounds(itemView.getRight() - iconMargin - 40, itemView.getTop() + iconMargin,
+                                itemView.getRight() - iconMargin, itemView.getBottom() - iconMargin);
+                    } else { // No swipe
+                        background = new ColorDrawable(Color.TRANSPARENT);
+                        icon = null;
+                    }
+
+                    background.draw(c);
+                    if (icon != null) {
+                        icon.draw(c);
+                    }
+                }
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            }
+        };
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
+    private void showDeleteConfirmationDialog(final int position) {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Delete Row")
+                .setMessage("Are you sure you want to delete this row?")
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteRow(position);
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        tableAdapter.notifyItemChanged(position);
+                    }
+                })
+                .show();
+    }
+
+    private void deleteRow(int position) {
+        tableData.remove(position);
+        tableAdapter.notifyItemRemoved(position);
+        updateRowNumbers();
+    }
+    private void highlightRow(int position) {
+        Row row = tableData.get(position);
+        boolean isCurrentlyHighlighted = row.isHighlighted();
+        row.setHighlighted(!isCurrentlyHighlighted);
+        tableAdapter.notifyItemChanged(position);
+    }
+    private void showToast(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+    }
     public void showNumberColumn() {
         if (!isNumberColumnVisible) {
             isNumberColumnVisible = true;

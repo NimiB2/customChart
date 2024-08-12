@@ -1,6 +1,7 @@
 package dev.nimrod.customchart;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -51,10 +52,12 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
 
         measureCells();
     }
+
     public void setNumberColumnVisible(boolean visible) {
         this.isNumberColumnVisible = visible;
         recalculateCellSizes();
     }
+
     public void setOnHeaderClickListener(OnHeaderClickListener listener) {
         this.headerClickListener = listener;
     }
@@ -126,6 +129,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
             notifyItemChanged(rowIndex);
         }
     }
+
     public void recalculateCellSizes() {
         measureCells();
         notifyDataSetChanged();
@@ -176,7 +180,11 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         public void bind(Row row, boolean isHeader, int rowPosition, boolean isNumberColumnVisible) {
             tableRow.removeAllViews();
             int rowHeight = row.getHeight();
-
+            if (row.isHighlighted()) {
+                tableRow.setBackgroundColor(Color.YELLOW);
+            } else {
+                tableRow.setBackgroundColor(Color.TRANSPARENT);
+            }
             for (int i = 0; i < row.getCellCount(); i++) {
                 if (i == 0 && !isNumberColumnVisible) {
                     continue;
@@ -230,6 +238,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
             return textView;
         }
     }
+
     public interface OnHeaderClickListener {
         void onHeaderClick(int columnIndex);
     }

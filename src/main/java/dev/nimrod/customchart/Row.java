@@ -4,6 +4,8 @@ import java.util.List;
 
 public class Row {
     private List<Cell> cells;
+    private boolean highlighted;
+
     private int height;
 
     public Row(List<Cell> cells) {
@@ -45,5 +47,12 @@ public class Row {
 
     public void removeCell(int index) {
         cells.remove(index);
+    }
+    public boolean isHighlighted() {
+        return highlighted;
+    }
+
+    public void setHighlighted(boolean highlighted) {
+        this.highlighted = highlighted;
     }
 }
