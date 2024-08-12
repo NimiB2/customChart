@@ -1,6 +1,7 @@
 package dev.nimrod.customchart;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
@@ -28,6 +29,8 @@ public class CustomTableView extends RelativeLayout {
     private boolean hasHeader = false;
     private AppCompatEditText filterText;
     private MaterialButton filterButton;
+    private MaterialButton clearFilterButton;
+    private TableViewCaretaker caretaker;
     private RecyclerView recyclerView;
     private TableAdapter tableAdapter;
     private List<Row> tableData;
@@ -54,6 +57,7 @@ public class CustomTableView extends RelativeLayout {
         recyclerView = findViewById(R.id.recycler_view);
         filterText = findViewById(R.id.filter_text);
         filterButton = findViewById(R.id.filter_button);
+        clearFilterButton = findViewById(R.id.clear_filter_button);
         tableTitle = findViewById(R.id.table_title);
 
         tableData = new ArrayList<>();
@@ -71,6 +75,8 @@ public class CustomTableView extends RelativeLayout {
             }
         });
 
+        caretaker = new TableViewCaretaker(); // Initialize the caretaker here
+        setupButtons();
         setupItemTouchHelper();
     }
 
@@ -82,6 +88,48 @@ public class CustomTableView extends RelativeLayout {
     public void hideTitle() {
         tableTitle.setVisibility(GONE);
     }
+    private void clearFilter() {
+        caretaker.restoreState(this); // Restore original state
+        caretaker.clearMemento(); // Clear the saved state
+        tableAdapter.setData(tableData);
+        tableAdapter.notifyDataSetChanged();
+        filterText.setText(""); // Clear the filter text input
+    }
+    private void setupButtons() {
+        filterButton.setOnClickListener(v -> {
+            String query = filterText.getText().toString().trim();
+            if (!query.isEmpty()) {
+                saveOriginalTableData(); // Save the original table data before filtering
+                filterRows(query);
+            } else {
+                clearFilter(); // Clear the filter if the text is empty
+            }
+        });
+
+        clearFilterButton.setOnClickListener(v -> clearFilter()); // Clear the filter when clicked
+    }
+
+    private void filterRows(String query) {
+        List<Row> filteredData = new ArrayList<>();
+        for (Row row : tableData) {
+            boolean rowContainsQuery = false;
+            for (int i = 0; i < row.getCellCount(); i++) {
+                Cell cell = row.getCell(i);
+                if (cell.getText().contains(query)) {
+                    rowContainsQuery = true;
+                    cell.setBackgroundColor(Color.YELLOW); // Highlight the matching cells in yellow
+                } else {
+                    cell.setBackgroundColor(Color.TRANSPARENT); // Reset non-matching cells
+                }
+            }
+            if (rowContainsQuery) {
+                filteredData.add(row);
+            }
+        }
+        tableAdapter.setData(filteredData);
+        tableAdapter.notifyDataSetChanged();
+    }
+
 
     public void addRow(String[] cellValues) {
         List<Cell> cellList = new ArrayList<>();
@@ -200,32 +248,6 @@ public class CustomTableView extends RelativeLayout {
 
         itemTouchHelper.attachToRecyclerView(recyclerView);
     }
-
-//    public void filterRows(String query) {
-//        if (caretaker.getMemento() == null) {
-//            caretaker.saveState(this);
-//        }
-//        List<Row> filteredData = new ArrayList<>();
-//        for (int i = hasHeader ? 1 : 0; i < tableData.size(); i++) {
-//            Row row = tableData.get(i);
-//            boolean rowContainsQuery = false;
-//            for (int j = 0; j < row.getCellCount(); j++) {
-//                if (row.getCell(j).getText().contains(query)) {
-//                    rowContainsQuery = true;
-//                    break;
-//                }
-//            }
-//            if (rowContainsQuery) {
-//                filteredData.add(row);
-//            }
-//        }
-//        tableAdapter.setData(filteredData);
-//    }
-//
-//    public void clearFilter() {
-//        caretaker.restoreState(this);
-//        caretaker.clearMemento();
-//    }
 
     public void showNumberColumn() {
         if (!isNumberColumnVisible) {
@@ -359,7 +381,6 @@ public class CustomTableView extends RelativeLayout {
         }
         headerCells.add(numberHeaderCell);
 
-
         // Add the header cells starting from column 1
         for (String value : headerValues) {
             Cell headerCell = new Cell(value);
@@ -371,6 +392,15 @@ public class CustomTableView extends RelativeLayout {
         // Add the constructed header row to the table data
         Row headerRow = new Row(headerCells);
         tableData.add(0, headerRow);
+
+        // Adjust the row below the header row to use regular cell borders
+        if (tableData.size() > 1) {
+            Row rowBelowHeader = tableData.get(1);
+            for (Cell cell : rowBelowHeader.getCells()) {
+                cell.setBorderDrawableResId(R.drawable.cell_border); // Set regular cell border
+                cell.setTypeface(Typeface.DEFAULT); // Set regular font
+            }
+        }
 
         updateRowNumbers();
         // Ensure that all other rows also have the correct number of cells
@@ -432,10 +462,18 @@ public class CustomTableView extends RelativeLayout {
                 cellCopy.setTextColor(cell.getTextColor());
                 cellCopy.setTextSize(cell.getTextSize());
                 cellCopy.setTypeface(cell.getTypeface());
+                cellCopy.setBorderDrawableResId(cell.getBorderDrawableResId());
                 cellsCopy.add(cellCopy);
             }
             copy.add(new Row(cellsCopy));
         }
         return copy;
     }
+
+    private void saveOriginalTableData() {
+        if (caretaker.getMemento() == null) {
+            caretaker.saveState(this); // Save the current table state
+        }
+    }
+
 }

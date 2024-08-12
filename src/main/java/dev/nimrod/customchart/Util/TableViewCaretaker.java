@@ -6,11 +6,13 @@ public class TableViewCaretaker {
     private TableViewMemento memento;
 
     public void saveState(CustomTableView tableView) {
-        memento = tableView.saveToMemento();
+        if (tableView != null) {
+            memento = tableView.saveToMemento();
+        }
     }
 
     public void restoreState(CustomTableView tableView) {
-        if (memento != null) {
+        if (memento != null && tableView != null) {
             tableView.restoreFromMemento(memento);
         }
     }

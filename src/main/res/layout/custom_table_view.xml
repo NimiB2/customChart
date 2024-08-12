@@ -17,6 +17,16 @@
         android:layout_height="wrap_content"
         android:text="Filter"
         android:layout_below="@id/filter_text"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/clear_filter_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Clear Filter"
+        android:layout_below="@id/filter_text"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="8dp" />
@@ -42,7 +52,7 @@
             android:id="@+id/recycler_view"
             android:layout_gravity="center_vertical"
             android:layout_width="wrap_content"
-            android:layout_height="250dp"
+            android:layout_height="450dp"
             android:padding="16dp"
             />
 
