@@ -93,6 +93,7 @@ public class CustomTableView extends RelativeLayout {
         }
         Row newRow = new Row(cellList);
         tableData.add(newRow);
+        ensureTableCompleteness();
 
         updateRowNumbers(); // Ensure numbers are correctly set
         tableAdapter.setData(tableData);
@@ -151,6 +152,7 @@ public class CustomTableView extends RelativeLayout {
             tableAdapter.updateCellTextSize(row, column, size);
         }
     }
+
     public void setRowColor(int row, int color) {
         if (row >= 0 && row < tableData.size()) {
             Row currentRow = tableData.get(row);
@@ -275,44 +277,110 @@ public class CustomTableView extends RelativeLayout {
         }
     }
 
+    private void ensureTableCompleteness() {
+        int maxColumns = getMaxColumns();
+
+        for (Row row : tableData) {
+            int missingCells = maxColumns - row.getCellCount();
+            for (int i = 0; i < missingCells; i++) {
+                row.addCell(new Cell("")); // Add empty cells to match the longest row
+            }
+        }
+    }
+
+    private int getMaxColumns() {
+        int maxColumns = 0;
+        for (Row row : tableData) {
+            maxColumns = Math.max(maxColumns, row.getCellCount());
+        }
+        return maxColumns;
+    }
+
+    public void addCellToRow(int rowIndex, String cellValue) {
+        if (rowIndex < 0 || rowIndex >= tableData.size()) return;
+
+        Row row = tableData.get(rowIndex);
+        Cell newCell = new Cell(cellValue);
+
+        // Check if it's the first row and there's a header
+        if (rowIndex == 0 && hasHeader) {
+            newCell.setBorderDrawableResId(R.drawable.header_cell_border);
+            newCell.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        }
+
+        row.addCell(newCell);
+        ensureTableCompleteness();
+        tableAdapter.setData(tableData);
+        tableAdapter.notifyDataSetChanged();
+    }
+
+    public void addColumn(String[] columnValues) {
+        // Check if there's a header and add the first cell as a header if applicable
+        if (hasHeader && !tableData.isEmpty()) {
+            Cell headerCell = new Cell(columnValues[0]);
+            headerCell.setBorderDrawableResId(R.drawable.header_cell_border);
+            headerCell.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+            tableData.get(0).addCell(headerCell);
+
+            // Start adding from the second element in the array
+            for (int i = 1; i < columnValues.length; i++) {
+                int rowIndex = i; // Adjust row index accordingly
+                if (rowIndex < tableData.size()) {
+                    Row row = tableData.get(rowIndex);
+                    row.addCell(new Cell(columnValues[i]));
+                }
+            }
+        } else {
+            // No header, add all elements normally
+            for (int i = 0; i < columnValues.length; i++) {
+                int rowIndex = i;
+                if (rowIndex < tableData.size()) {
+                    Row row = tableData.get(rowIndex);
+                    row.addCell(new Cell(columnValues[i]));
+                }
+            }
+        }
+
+        // Ensure the table remains complete
+        ensureTableCompleteness();
+        tableAdapter.setData(tableData);
+        tableAdapter.notifyDataSetChanged();
+    }
+
 
     public void addHeaderRow(String[] headerValues) {
         hasHeader = true;
         List<Cell> headerCells = new ArrayList<>();
 
+        Cell numberHeaderCell = new Cell(numberingHeaderText);
+        if (isNumberColumnVisible) {
+            numberHeaderCell.setBorderDrawableResId(R.drawable.header_cell_border);
+            numberHeaderCell.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        }
+        headerCells.add(numberHeaderCell);
+
+
+        // Add the header cells starting from column 1
         for (String value : headerValues) {
             Cell headerCell = new Cell(value);
             headerCell.setBorderDrawableResId(R.drawable.header_cell_border); // Use the header cell frame
             headerCell.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD)); // Set bold font for header
-            headerCells.add(headerCell);
+            headerCells.add(headerCell); // Add each header cell to the next column
         }
 
-        if (isNumberColumnVisible) {
-            Cell numberHeaderCell = new Cell(numberingHeaderText);
-            numberHeaderCell.setBorderDrawableResId(R.drawable.header_cell_border);
-            headerCells.add(0, numberHeaderCell);
-        }
-
+        // Add the constructed header row to the table data
         Row headerRow = new Row(headerCells);
         tableData.add(0, headerRow);
 
-        if (tableData.size() > 1) {
-            Row rowBelowHeader = tableData.get(1);
-            for (int i = 0; i < rowBelowHeader.getCellCount(); i++) {
-                Cell cell = rowBelowHeader.getCell(i);
-                cell.setBorderDrawableResId(R.drawable.cell_border); // Set regular cell border
-                cell.setTypeface(Typeface.DEFAULT); // Set regular font
-
-                if (i == 0 && isNumberColumnVisible) {
-                    cell.setText("0"); // Set numbering cell to "0"
-                }
-            }
-        }
+        updateRowNumbers();
+        // Ensure that all other rows also have the correct number of cells
+        ensureTableCompleteness();
 
         tableAdapter.setData(tableData);
         tableAdapter.notifyItemInserted(0);
-        tableAdapter.notifyItemChanged(1);
+        tableAdapter.notifyItemChanged(1); // Refresh the row below the header
     }
+
 
     public void setHasHeader(boolean hasHeader) {
         this.hasHeader = hasHeader;
