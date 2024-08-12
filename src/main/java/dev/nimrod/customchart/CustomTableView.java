@@ -18,6 +18,8 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import dev.nimrod.customchart.Util.TableViewCaretaker;
@@ -35,6 +37,9 @@ public class CustomTableView extends RelativeLayout {
     private TableAdapter tableAdapter;
     private List<Row> tableData;
     private MaterialTextView tableTitle;
+    private int sortedColumn = -1;
+    private boolean isAscending = true;
+
 
     public CustomTableView(Context context) {
         super(context);
@@ -79,7 +84,66 @@ public class CustomTableView extends RelativeLayout {
         setupButtons();
         setupItemTouchHelper();
     }
+    private void setupSortingListener() {
+        tableAdapter.setOnHeaderClickListener(columnIndex -> sortColumn(columnIndex));
+    }
 
+    private void removeSortingListener() {
+        tableAdapter.setOnHeaderClickListener(null);
+    }
+
+    private void sortColumn(int columnIndex) {
+        if (caretaker.getMemento() != null) {
+            // Don't sort if filtering is active
+            return;
+        }
+
+        if (columnIndex == sortedColumn) {
+            isAscending = !isAscending;
+        } else {
+            sortedColumn = columnIndex;
+            isAscending = true;
+        }
+
+        if (hasHeader && tableData.size() > 1) {
+            Collections.sort(tableData.subList(1, tableData.size()),
+                    (row1, row2) -> compareValues(row1.getCell(columnIndex).getText(),
+                            row2.getCell(columnIndex).getText()));
+            tableAdapter.setData(tableData);
+            tableAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private int compareValues(String value1, String value2) {
+        // Check for "Row X, Col Y" pattern
+        String pattern = "Row (\\d+), Col (\\d+)";
+        java.util.regex.Pattern r = java.util.regex.Pattern.compile(pattern);
+        java.util.regex.Matcher m1 = r.matcher(value1);
+        java.util.regex.Matcher m2 = r.matcher(value2);
+
+        if (m1.find() && m2.find()) {
+            int row1 = Integer.parseInt(m1.group(1));
+            int row2 = Integer.parseInt(m2.group(1));
+            int comparison = Integer.compare(row1, row2);
+            if (comparison != 0) {
+                return isAscending ? comparison : -comparison;
+            }
+            // If rows are the same, compare column numbers
+            int col1 = Integer.parseInt(m1.group(2));
+            int col2 = Integer.parseInt(m2.group(2));
+            return isAscending ? Integer.compare(col1, col2) : Integer.compare(col2, col1);
+        }
+
+        // If not matching the pattern, try to parse as numbers
+        try {
+            double num1 = Double.parseDouble(value1);
+            double num2 = Double.parseDouble(value2);
+            return isAscending ? Double.compare(num1, num2) : Double.compare(num2, num1);
+        } catch (NumberFormatException e) {
+            // If parsing fails, compare as strings
+            return isAscending ? value1.compareTo(value2) : value2.compareTo(value1);
+        }
+    }
     public void setTitle(String title) {
         tableTitle.setText(title);
         tableTitle.setVisibility(VISIBLE);
@@ -414,22 +478,22 @@ public class CustomTableView extends RelativeLayout {
 
     public void setHasHeader(boolean hasHeader) {
         this.hasHeader = hasHeader;
-
-        if (!tableData.isEmpty()) {
-            Row firstRow = tableData.get(0);
-            int borderDrawableResId = hasHeader ? R.drawable.header_cell_border : R.drawable.cell_border;
-
-            for (int i = 0; i < firstRow.getCellCount(); i++) {
-                Cell cell = firstRow.getCell(i);
-                cell.setBorderDrawableResId(borderDrawableResId);
-            }
-
-            tableAdapter.setData(tableData);
-            tableAdapter.notifyItemChanged(0); // Refresh the first row to apply the new border
-        }
         tableAdapter.setHasHeader(hasHeader);
+        if (hasHeader) {
+            setupSortingListener();
+        } else {
+            removeSortingListener();
+            if (!tableData.isEmpty()) {
+                Row firstRow = tableData.get(0);
+                for (int i = 0; i < firstRow.getCellCount(); i++) {
+                    Cell cell = firstRow.getCell(i);
+                    cell.setBorderDrawableResId(R.drawable.cell_border);
+                    cell.setTypeface(Typeface.DEFAULT);
+                }
+            }
+        }
+        tableAdapter.notifyDataSetChanged();
     }
-
 
     private boolean isValidPosition(int row, int column) {
         return row >= 0 && row < tableData.size() && column >= 0 && column < tableData.get(row).getCellCount();

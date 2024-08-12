@@ -34,6 +34,9 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
     private int[] maxColumnWidths;
     private int minCellHeight;
 
+    private boolean sortableHeader = false;
+    private OnHeaderClickListener headerClickListener;
+
     public TableAdapter(Context context, List<List<Cell>> data) {
         this.context = context;
         this.minCellHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 68, context.getResources().getDisplayMetrics());
@@ -51,6 +54,9 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
     public void setNumberColumnVisible(boolean visible) {
         this.isNumberColumnVisible = visible;
         recalculateCellSizes();
+    }
+    public void setOnHeaderClickListener(OnHeaderClickListener listener) {
+        this.headerClickListener = listener;
     }
 
     private int getMaxColumns() {
@@ -177,8 +183,20 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
                 }
                 Cell cell = row.getCell(i);
                 TextView textView = createCellView(cell, isHeader, i == 0);
+                textView.setTypeface(cell.getTypeface());
+
                 TableRow.LayoutParams params = new TableRow.LayoutParams(maxColumnWidths[i], rowHeight);
                 textView.setLayoutParams(params);
+                if (isHeader && hasHeader) {
+                    final int columnIndex = i;
+                    textView.setOnClickListener(v -> {
+                        if (headerClickListener != null) {
+                            headerClickListener.onHeaderClick(columnIndex);
+                        }
+                    });
+                } else {
+                    textView.setOnClickListener(null);
+                }
                 tableRow.addView(textView);
             }
 
@@ -211,5 +229,8 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
 
             return textView;
         }
+    }
+    public interface OnHeaderClickListener {
+        void onHeaderClick(int columnIndex);
     }
 }
