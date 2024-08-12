@@ -10,6 +10,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.RelativeLayout;
@@ -23,12 +24,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textview.MaterialTextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Stack;
 
 import dev.nimrod.customchart.Util.TableViewCaretaker;
 import dev.nimrod.customchart.Util.TableViewMemento;
@@ -76,17 +79,7 @@ public class CustomTableView extends RelativeLayout {
         tableData = new ArrayList<>();
         tableAdapter = new TableAdapter(context, new ArrayList<>());
         recyclerView.setAdapter(tableAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context) {
-            @Override
-            public boolean canScrollVertically() {
-                return true;
-            }
-
-            @Override
-            public boolean canScrollHorizontally() {
-                return true;
-            }
-        });
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
         caretaker = new TableViewCaretaker(); // Initialize the caretaker here
         setupButtons();
@@ -364,7 +357,8 @@ public class CustomTableView extends RelativeLayout {
                     View itemView = viewHolder.itemView;
                     ColorDrawable background;
                     Drawable icon;
-                    int iconMargin = (itemView.getHeight() - 40) / 2; // Assuming icon size of 40dp
+                    int iconSize = 80; // Increased icon size
+                    int iconMargin = (itemView.getHeight() - iconSize) / 2;
 
                     if (dX > 0) { // Swiping to the right (delete)
                         background = new ColorDrawable(Color.RED);

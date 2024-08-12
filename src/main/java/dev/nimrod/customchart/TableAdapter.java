@@ -8,6 +8,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -138,15 +139,21 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
     @NonNull
     @Override
     public TableRowViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        Log.d("TableAdapter", "onCreateViewHolder called");
+
         View view = LayoutInflater.from(context).inflate(R.layout.table_row_item, parent, false);
         return new TableRowViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull TableRowViewHolder holder, int position) {
+        Log.d("TableAdapter", "onBindViewHolder called for position: " + position);
+
         Row row = rows.get(position);
         boolean isHeader = hasHeader && position == 0;
         holder.bind(row, isHeader, position, isNumberColumnVisible);
+        holder.itemView.setOnTouchListener(null); // Remove any existing touch listeners
+
     }
 
     @Override
