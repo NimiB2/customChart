@@ -591,18 +591,36 @@ public class CustomTableView extends RelativeLayout {
         tableAdapter.setHasHeader(hasHeader);
         if (hasHeader) {
             setupSortingListener();
+            applyHeaderStyling();
         } else {
             removeSortingListener();
-            if (!tableData.isEmpty()) {
-                Row firstRow = tableData.get(0);
-                for (int i = 0; i < firstRow.getCellCount(); i++) {
-                    Cell cell = firstRow.getCell(i);
-                    cell.setBorderDrawableResId(R.drawable.cell_border);
-                    cell.setTypeface(Typeface.DEFAULT);
-                }
-            }
+            removeHeaderStyling();
         }
         tableAdapter.notifyDataSetChanged();
+    }
+    private void applyHeaderStyling() {
+        if (!tableData.isEmpty()) {
+            Row headerRow = tableData.get(0);
+            for (int i = 0; i < headerRow.getCellCount(); i++) {
+                Cell cell = headerRow.getCell(i);
+                cell.setBorderDrawableResId(R.drawable.header_cell_border);
+                cell.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+                cell.setTextColor(Color.BLACK); // You can choose a different color if needed
+            }
+        }
+    }
+
+    private void removeHeaderStyling() {
+        if (!tableData.isEmpty()) {
+            Row firstRow = tableData.get(0);
+            for (int i = 0; i < firstRow.getCellCount(); i++) {
+                Cell cell = firstRow.getCell(i);
+                cell.setBorderDrawableResId(R.drawable.cell_border);
+                cell.setTypeface(Typeface.DEFAULT);
+                cell.setTextColor(Color.BLACK);
+                cell.setBackgroundColor(Color.TRANSPARENT);
+            }
+        }
     }
 
     private boolean isValidPosition(int row, int column) {
