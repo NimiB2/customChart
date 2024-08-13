@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
@@ -202,6 +203,16 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
 
                 TableRow.LayoutParams params = new TableRow.LayoutParams(maxColumnWidths[i], rowHeight);
                 textView.setLayoutParams(params);
+
+                if (row.isHighlighted()) {
+                    Drawable originalBackground = textView.getBackground();
+                    LayerDrawable layerDrawable = new LayerDrawable(new Drawable[]{
+                            originalBackground,
+                            new ColorDrawable(Color.parseColor("#80FFFF00"))  // Semi-transparent yellow
+                    });
+                    textView.setBackground(layerDrawable);
+                }
+
                 if (isHeader && hasHeader) {
                     final int columnIndex = i;
                     textView.setOnClickListener(v -> {
@@ -221,15 +232,10 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         private TextView createCellView(Cell cell, boolean isHeader, boolean isRowNumber) {
             TextView textView = new TextView(tableRow.getContext());
             textView.setText(cell.getText());
-
-
             textView.setPadding(HORIZONTAL_PADDING, VERTICAL_PADDING, HORIZONTAL_PADDING, VERTICAL_PADDING);
             textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, cell.getTextSize());
-            Drawable borderDrawable = ContextCompat.getDrawable(context, cell.getBorderDrawableResId()).mutate();
-            GradientDrawable backgroundDrawable = new GradientDrawable();
-            backgroundDrawable.setColor(cell.getBackgroundColor());
-            LayerDrawable layerDrawable = new LayerDrawable(new Drawable[]{backgroundDrawable, borderDrawable});
-            textView.setBackground(layerDrawable);
+
+            textView.setBackground(cell.getBackgroundDrawable(context));
 
             textView.setTextColor(cell.getTextColor());
             textView.setTypeface(cell.getTypeface());

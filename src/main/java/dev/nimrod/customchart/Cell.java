@@ -1,7 +1,13 @@
 package dev.nimrod.customchart;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
+
+import androidx.core.content.ContextCompat;
 
 public class Cell {
     private String text;
@@ -21,6 +27,12 @@ public class Cell {
     public void setText(String text) { this.text = text; }
     public int getBackgroundColor() { return backgroundColor; }
     public void setBackgroundColor(int backgroundColor) { this.backgroundColor = backgroundColor; }
+    public Drawable getBackgroundDrawable(Context context) {
+        Drawable borderDrawable = ContextCompat.getDrawable(context, borderDrawableResId).mutate();
+        GradientDrawable backgroundDrawable = new GradientDrawable();
+        backgroundDrawable.setColor(backgroundColor);
+        return new LayerDrawable(new Drawable[]{backgroundDrawable, borderDrawable});
+    }
     public int getTextColor() { return textColor; }
     public void setTextColor(int textColor) { this.textColor = textColor; }
     public float getTextSize() { return textSize; }
