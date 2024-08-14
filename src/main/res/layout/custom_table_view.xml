@@ -91,6 +91,15 @@
         </androidx.appcompat.widget.LinearLayoutCompat>
     </dev.nimrod.customchart.CustomHorizontalScrollView>
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="16dp"
+        app:fabSize="normal"
+        app:srcCompat="@drawable/menu" />
     <!-- Arrows for scrolling -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/left_scroll_button"

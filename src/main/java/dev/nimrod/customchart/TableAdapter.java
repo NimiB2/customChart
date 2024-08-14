@@ -104,7 +104,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
             int cellHeight = Math.max(bounds.height() + 2 * VERTICAL_PADDING, minCellHeight);
 
             maxColumnWidths[columnIndex] = Math.max(maxColumnWidths[columnIndex], cellWidth);
-            maxRowHeight = Math.max(maxRowHeight, cellHeight);
+            maxRowHeight = Math.max(maxRowHeight, cellHeight);  // Determine the max height for the row
         }
 
         row.setHeight(maxRowHeight);
@@ -147,8 +147,6 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
 
     @Override
     public void onBindViewHolder(@NonNull TableRowViewHolder holder, int position) {
-        Log.d("TableAdapter", "onBindViewHolder called for position: " + position);
-
         Row row = rows.get(position);
         boolean isHeader = hasHeader && position == 0;
         holder.bind(row, isHeader, position, isNumberColumnVisible);

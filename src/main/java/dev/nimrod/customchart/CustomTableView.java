@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.HorizontalScrollView;
+import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -45,7 +46,7 @@ public class CustomTableView extends RelativeLayout {
     private MaterialButton filterButton;
     private MaterialButton clearFilterButton;
     private TableViewCaretaker caretaker;
-//    private RecyclerView recyclerView;
+    //    private RecyclerView recyclerView;
     private TableAdapter tableAdapter;
     private List<Row> tableData;
     private MaterialTextView tableTitle;
@@ -97,11 +98,140 @@ public class CustomTableView extends RelativeLayout {
 
         setupHorizontalScrollButtons(horizontalScrollView);
 
+        setupFloatingActionButton(); // Add this line
 
         setupButtons();
         setupItemTouchHelper();
 
     }
+
+    private void setupFloatingActionButton() {
+        FloatingActionButton fabMain = findViewById(R.id.fab_main);
+        fabMain.setOnClickListener(v -> showPopupMenu(v));
+    }
+
+    private void showPopupMenu(View view) {
+        PopupMenu popup = new PopupMenu(getContext(), view);
+        popup.getMenuInflater().inflate(R.menu.custom_table_menu, popup.getMenu());
+        popup.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.menu_add_row) {
+                showAddRowDialog();
+                return true;
+            } else if (itemId == R.id.menu_remove_row) {
+                showRemoveRowDialog();
+                return true;
+            } else if (itemId == R.id.menu_add_column) {
+                showAddColumnDialog();
+                return true;
+            } else if (itemId == R.id.menu_remove_column) {
+                showRemoveColumnDialog();
+                return true;
+            } else if (itemId == R.id.menu_toggle_title) {
+                if (tableTitle.getVisibility() == VISIBLE) {
+                    hideTitle();
+                } else {
+                    setTitle("My Table Title");
+                }
+                return true;
+            } else if (itemId == R.id.menu_toggle_numbering) {
+                if (isNumberColumnVisible) {
+                    hideNumberColumn();
+                } else {
+                    showNumberColumn();
+                }
+                return true;
+            } else if (itemId == R.id.menu_toggle_header) {  // New option for header toggle
+                toggleHeader();
+                return true;
+            }
+            return false;
+        });
+        popup.show();
+    }
+
+
+    private void toggleHeader() {
+        if (hasHeader) {
+            setHasHeader(false);  // Remove header
+        } else {
+            setHasHeader(true);
+        }
+    }
+
+
+    private void showAddRowDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Add Row");
+
+        final AppCompatEditText input = new AppCompatEditText(getContext());
+        input.setHint("Enter values separated by //");
+
+        builder.setView(input);
+
+        builder.setPositiveButton("Add", (dialog, which) -> {
+            String inputText = input.getText().toString();
+            String[] cellValues = inputText.split("//");
+            addRow(cellValues);
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+    private void showRemoveRowDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Remove Row");
+
+        final AppCompatEditText input = new AppCompatEditText(getContext());
+        input.setHint("Enter row number to remove");
+
+        builder.setView(input);
+
+        builder.setPositiveButton("Remove", (dialog, which) -> {
+            int rowIndex = Integer.parseInt(input.getText().toString());
+            removeRow(rowIndex);
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+    private void showAddColumnDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Add Column");
+
+        final AppCompatEditText input = new AppCompatEditText(getContext());
+        input.setHint("Enter values separated by //");
+
+        builder.setView(input);
+
+        builder.setPositiveButton("Add", (dialog, which) -> {
+            String inputText = input.getText().toString();
+            String[] columnValues = inputText.split("//");
+            addColumn(columnValues);
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+    private void showRemoveColumnDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Remove Column");
+
+        final AppCompatEditText input = new AppCompatEditText(getContext());
+        input.setHint("Enter column number to remove");
+
+        builder.setView(input);
+
+        builder.setPositiveButton("Remove", (dialog, which) -> {
+            int columnIndex = Integer.parseInt(input.getText().toString());
+            removeColumn(columnIndex);
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
 
     private void setupHorizontalScrollButtons(CustomHorizontalScrollView horizontalScrollView) {
         leftScrollButton.setOnClickListener(v -> horizontalScrollView.smoothScrollBy(-500, 0)); // Scroll left
@@ -306,14 +436,6 @@ public class CustomTableView extends RelativeLayout {
             Cell cell = tableData.get(row).getCell(column);
             cell.setTypeface(typeface);
             tableAdapter.updateCell(row, column, cell);
-        }
-    }
-
-    public void setCellTextSize(int row, int column, float size) {
-        if (isValidPosition(row, column)) {
-            Cell cell = tableData.get(row).getCell(column);
-            cell.setTextSize(size);
-            tableAdapter.updateCellTextSize(row, column, size);
         }
     }
 
@@ -718,5 +840,4 @@ public class CustomTableView extends RelativeLayout {
             caretaker.saveState(this); // Save the current table state
         }
     }
-
 }
