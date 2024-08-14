@@ -140,7 +140,6 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
     @NonNull
     @Override
     public TableRowViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Log.d("TableAdapter", "onCreateViewHolder called");
 
         View view = LayoutInflater.from(context).inflate(R.layout.table_row_item, parent, false);
         return new TableRowViewHolder(view);

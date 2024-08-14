@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/filter_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Filter text"
+        android:layout_alignParentTop="true"
         android:layout_margin="16dp"
-        android:layout_alignParentTop="true" />
+        android:hint="Filter text" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/filter_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Filter"
         android:layout_below="@id/filter_text"
         android:layout_alignParentStart="true"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="8dp"
+        android:text="Filter" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/clear_filter_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Clear Filter"
         android:layout_below="@id/filter_text"
         android:layout_alignParentEnd="true"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp" />
+        android:text="Clear Filter" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/table_title"
@@ -38,41 +38,71 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/filter_button"
         android:layout_marginTop="8dp"
+        android:padding="16dp"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:padding="16dp"
         android:visibility="gone" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view"
-        android:layout_gravity="center_vertical"
-        android:layout_width="500dp"
-        android:layout_height="500dp"
+    <dev.nimrod.customchart.CustomHorizontalScrollView
+        android:id="@+id/horizontal_scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_below="@id/table_title"
-        android:clipToPadding="false"
-        android:padding="16dp"
-        />
+        android:scrollbars="horizontal">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <dev.nimrod.customchart.CustomRecyclerView
+                android:id="@+id/recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="500dp"
+                android:scrollbars="vertical" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </dev.nimrod.customchart.CustomHorizontalScrollView>
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/left_scroll_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_margin="16dp"
+        app:fabSize="mini"
+        app:srcCompat="@drawable/left" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/right_scroll_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_margin="16dp"
+        app:fabSize="mini"
+        app:srcCompat="@drawable/right" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/undo_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/recycler_view"
-        android:paddingTop="16dp"
+        android:layout_below="@id/horizontal_scroll_view"
         android:layout_alignParentStart="true"
         android:layout_margin="16dp"
+        android:paddingTop="16dp"
         app:fabSize="mini"
-        app:srcCompat="@drawable/undo"
-        />
+        app:srcCompat="@drawable/undo" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/redo_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/recycler_view"
-        android:paddingTop="16dp"
+        android:layout_below="@id/horizontal_scroll_view"
         android:layout_alignParentEnd="true"
         android:layout_margin="16dp"
+        android:paddingTop="16dp"
         app:fabSize="mini"
         app:srcCompat="@drawable/redo" />
 

@@ -13,6 +13,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.HorizontalScrollView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -44,13 +45,18 @@ public class CustomTableView extends RelativeLayout {
     private MaterialButton filterButton;
     private MaterialButton clearFilterButton;
     private TableViewCaretaker caretaker;
-    private RecyclerView recyclerView;
+//    private RecyclerView recyclerView;
     private TableAdapter tableAdapter;
     private List<Row> tableData;
     private MaterialTextView tableTitle;
     private int sortedColumn = -1;
     private boolean isAscending = true;
 
+    private CustomRecyclerView recyclerView;
+    private FloatingActionButton leftScrollButton;
+    private FloatingActionButton rightScrollButton;
+    private boolean isHorizontalScrollingEnabled = false; // Initially disabled
+    private boolean isSlidingEnabled = true; // Initially enabled
 
     public CustomTableView(Context context) {
         super(context);
@@ -71,20 +77,65 @@ public class CustomTableView extends RelativeLayout {
         LayoutInflater.from(context).inflate(R.layout.custom_table_view, this, true);
 
         recyclerView = findViewById(R.id.recycler_view);
+        leftScrollButton = findViewById(R.id.left_scroll_button);
+        rightScrollButton = findViewById(R.id.right_scroll_button);
+        CustomHorizontalScrollView horizontalScrollView = findViewById(R.id.horizontal_scroll_view);
+
         filterText = findViewById(R.id.filter_text);
         filterButton = findViewById(R.id.filter_button);
         clearFilterButton = findViewById(R.id.clear_filter_button);
         tableTitle = findViewById(R.id.table_title);
-
+        caretaker = new TableViewCaretaker();
         tableData = new ArrayList<>();
         tableAdapter = new TableAdapter(context, new ArrayList<>());
         recyclerView.setAdapter(tableAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
-        caretaker = new TableViewCaretaker(); // Initialize the caretaker here
+        // Set up RecyclerView with vertical scrolling
+        LinearLayoutManager layoutManager = new LinearLayoutManager(context);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(tableAdapter);
+
+        setupHorizontalScrollButtons(horizontalScrollView);
+
+
         setupButtons();
         setupItemTouchHelper();
+
     }
+
+    private void setupHorizontalScrollButtons(CustomHorizontalScrollView horizontalScrollView) {
+        leftScrollButton.setOnClickListener(v -> horizontalScrollView.smoothScrollBy(-100, 0)); // Scroll left
+        rightScrollButton.setOnClickListener(v -> horizontalScrollView.smoothScrollBy(100, 0)); // Scroll right
+    }
+
+    private void scrollHorizontally(int dx) {
+        for (int i = 0; i < recyclerView.getChildCount(); i++) {
+            View child = recyclerView.getChildAt(i);
+            if (child instanceof HorizontalScrollView) {
+                ((HorizontalScrollView) child).smoothScrollBy(dx, 0);
+            }
+        }
+    }
+
+
+    private void enableHorizontalScrolling() {
+        recyclerView.setHorizontalScrollingEnabled(true);
+        isSlidingEnabled = false;
+    }
+
+    private void disableHorizontalScrolling() {
+        recyclerView.setHorizontalScrollingEnabled(false);
+        isSlidingEnabled = true;
+    }
+
+    private void scrollRecyclerViewHorizontally(int dx) {
+        if (recyclerView.isHorizontalScrollingEnabled()) {
+            recyclerView.scrollBy(dx, 0);
+        }
+        disableHorizontalScrolling(); // Disable scrolling after the move
+    }
+
+
     private void setupSortingListener() {
         tableAdapter.setOnHeaderClickListener(columnIndex -> sortColumn(columnIndex));
     }
