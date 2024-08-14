@@ -104,8 +104,8 @@ public class CustomTableView extends RelativeLayout {
     }
 
     private void setupHorizontalScrollButtons(CustomHorizontalScrollView horizontalScrollView) {
-        leftScrollButton.setOnClickListener(v -> horizontalScrollView.smoothScrollBy(-100, 0)); // Scroll left
-        rightScrollButton.setOnClickListener(v -> horizontalScrollView.smoothScrollBy(100, 0)); // Scroll right
+        leftScrollButton.setOnClickListener(v -> horizontalScrollView.smoothScrollBy(-500, 0)); // Scroll left
+        rightScrollButton.setOnClickListener(v -> horizontalScrollView.smoothScrollBy(500, 0)); // Scroll right
     }
 
     private void scrollHorizontally(int dx) {
