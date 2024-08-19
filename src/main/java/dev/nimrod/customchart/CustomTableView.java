@@ -403,10 +403,9 @@ public class CustomTableView extends RelativeLayout {
 
 
     public void addRow(String[] cellValues) {
-
         List<Cell> cellList = new ArrayList<>();
 
-        cellList.add(new Cell(String.valueOf(tableData.size() + (hasHeader ? 0 : 1))));
+        cellList.add(new Cell("")); // Placeholder for number column
 
         for (String value : cellValues) {
             cellList.add(new Cell(value));
@@ -415,27 +414,31 @@ public class CustomTableView extends RelativeLayout {
         tableData.add(newRow);
         ensureTableCompleteness();
 
-        updateRowNumbers(); // Ensure numbers are correctly set
+        updateRowNumbers(); // This will set the correct numbers
         tableAdapter.setData(tableData);
         tableAdapter.notifyItemInserted(tableData.size() - 1);
-        logTableState("After adding row");
-
     }
 
     public void removeRow(int position) {
-        if (position >= 0 && position < tableData.size()) {
-            TableViewMemento beforeState = saveToMemento();
-            undoStack.push(beforeState);
-            redoStack.clear();
+        if (position > 0 || (position == 0 && hasHeader)) {
+            if (position < tableData.size()) {
+                if(position == 0) {
+                    hasHeader = false;
+                } else if (!hasHeader){
+                    position --;
+                }
+                TableViewMemento beforeState = saveToMemento();
+                undoStack.push(beforeState);
+                redoStack.clear();
 
-            tableData.remove(position);
-            tableAdapter.setData(tableData);
-            tableAdapter.notifyItemRemoved(position);
-            if (isNumberColumnVisible) {
-                updateRowNumbers();
+                tableData.remove(position);
+                tableAdapter.setData(tableData);
+                tableAdapter.notifyItemRemoved(position);
+                if (isNumberColumnVisible) {
+                    updateRowNumbers();
+                }
+                updateUndoRedoButtons();
             }
-            updateUndoRedoButtons();
-            logTableState("After removing row");
         }
     }
 
@@ -537,10 +540,16 @@ public class CustomTableView extends RelativeLayout {
 
                 viewHolder.itemView.setElevation(0f); // Reset elevation when dragging ends
                 viewHolder.itemView.setBackgroundResource(android.R.color.transparent);
-
-                if (dragFrom != -1 && dragTo != -1 && dragFrom != dragTo) {
+                if (hasHeader && (dragFrom == 0 || dragTo == 0)) {
+                    showToast("Cannot Swap Header");
+                } else if (dragFrom != -1 && dragTo != -1 && dragFrom != dragTo) {
                     updateRowNumbers();
-                    showToast("Rows swapped: " + (dragFrom + 1) + " and " + (dragTo + 1));
+                    if(!hasHeader){
+                        dragFrom ++;
+                        dragTo ++;
+                    }
+
+                    showToast("Rows swapped: " + (dragFrom) + " and " + (dragTo));
                 }
 
                 dragFrom = dragTo = -1;
@@ -654,16 +663,16 @@ public class CustomTableView extends RelativeLayout {
     }
 
     private void updateRowNumbers() {
-        for (int i = hasHeader ? 1 : 0; i < tableData.size(); i++) {
+        for (int i = 0; i < tableData.size(); i++) {
             Row row = tableData.get(i);
             if (row.getCellCount() > 0) {
                 if (i == 0 && hasHeader) {
                     row.setCell(0, new Cell(numberingHeaderText));
-                } else {
-                    row.setCell(0, new Cell(String.valueOf(i - (hasHeader ? 1 : 0))));
+                } else if (i > 0 || !hasHeader) {
+                    row.setCell(0, new Cell(String.valueOf(i + (hasHeader ? 0 : 1))));
                 }
-            } else {
-                row.addCell(new Cell(String.valueOf(i - (hasHeader ? 1 : 0))));
+            } else if (i > 0 || !hasHeader) {
+                row.addCell(new Cell(String.valueOf(i + (hasHeader ? 0 : 1))));
             }
         }
         tableAdapter.setNumberColumnVisible(isNumberColumnVisible);
@@ -840,7 +849,7 @@ public class CustomTableView extends RelativeLayout {
     }
 
     private boolean isValidPosition(int row, int column) {
-        return row >= 0 && row < tableData.size() && column >= 0 && column < tableData.get(row).getCellCount();
+        return (row > 0 || (row == 0 && hasHeader)) && row < tableData.size() && column >= 0 && column < tableData.get(row).getCellCount();
     }
     private void setupUndoRedoButtons() {
         if (undoButton != null) {
