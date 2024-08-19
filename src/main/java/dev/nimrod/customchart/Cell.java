@@ -9,6 +9,8 @@ import android.graphics.drawable.LayerDrawable;
 
 import androidx.core.content.ContextCompat;
 
+import java.util.Objects;
+
 public class Cell {
     private String text;
     private int backgroundColor = Color.TRANSPARENT;
@@ -45,5 +47,23 @@ public class Cell {
     public Cell setBorderDrawableResId(int borderDrawableResId) {
         this.borderDrawableResId = borderDrawableResId;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Cell cell = (Cell) o;
+        return backgroundColor == cell.backgroundColor &&
+                textColor == cell.textColor &&
+                Float.compare(cell.textSize, textSize) == 0 &&
+                borderDrawableResId == cell.borderDrawableResId &&
+                Objects.equals(text, cell.text) &&
+                Objects.equals(typeface, cell.typeface);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(text, backgroundColor, textColor, textSize, typeface, borderDrawableResId);
     }
 }

@@ -1,5 +1,7 @@
 package dev.nimrod.customchart;
 
+import static android.net.http.SslCertificate.saveState;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -39,6 +41,9 @@ import dev.nimrod.customchart.Util.TableViewCaretaker;
 import dev.nimrod.customchart.Util.TableViewMemento;
 
 public class CustomTableView extends RelativeLayout {
+    private static final String TAG = "CustomTableView";
+
+
     private String numberingHeaderText = "NUMB";
     private boolean isNumberColumnVisible = true;
     private boolean hasHeader = false;
@@ -46,18 +51,24 @@ public class CustomTableView extends RelativeLayout {
     private MaterialButton filterButton;
     private MaterialButton clearFilterButton;
     private TableViewCaretaker caretaker;
+    private Stack<TableViewMemento> undoStack;
+    private Stack<TableViewMemento> redoStack;
+    private FloatingActionButton undoButton;
+    private FloatingActionButton redoButton;
     //    private RecyclerView recyclerView;
     private TableAdapter tableAdapter;
     private List<Row> tableData;
     private MaterialTextView tableTitle;
     private int sortedColumn = -1;
     private boolean isAscending = true;
-
     private CustomRecyclerView recyclerView;
     private FloatingActionButton leftScrollButton;
     private FloatingActionButton rightScrollButton;
     private boolean isHorizontalScrollingEnabled = false; // Initially disabled
     private boolean isSlidingEnabled = true; // Initially enabled
+    private TableViewMemento initialState;
+
+
 
     public CustomTableView(Context context) {
         super(context);
@@ -91,10 +102,19 @@ public class CustomTableView extends RelativeLayout {
         tableAdapter = new TableAdapter(context, new ArrayList<>());
         recyclerView.setAdapter(tableAdapter);
 
+        undoButton = findViewById(R.id.undo_button);
+        redoButton = findViewById(R.id.redo_button);
+
         // Set up RecyclerView with vertical scrolling
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(tableAdapter);
+
+        undoStack = new Stack<>();
+        redoStack = new Stack<>();
+        caretaker = new TableViewCaretaker();
+
+        setupUndoRedoButtons();
 
         setupHorizontalScrollButtons(horizontalScrollView);
 
@@ -114,6 +134,9 @@ public class CustomTableView extends RelativeLayout {
         PopupMenu popup = new PopupMenu(getContext(), view);
         popup.getMenuInflater().inflate(R.menu.custom_table_menu, popup.getMenu());
         popup.setOnMenuItemClickListener(item -> {
+            TableViewMemento beforeState = saveToMemento();
+            undoStack.push(beforeState);
+
             int itemId = item.getItemId();
             if (itemId == R.id.menu_add_row) {
                 showAddRowDialog();
@@ -329,10 +352,12 @@ public class CustomTableView extends RelativeLayout {
     public void setTitle(String title) {
         tableTitle.setText(title);
         tableTitle.setVisibility(VISIBLE);
+
     }
 
     public void hideTitle() {
         tableTitle.setVisibility(GONE);
+
     }
     private void clearFilter() {
         caretaker.restoreState(this); // Restore original state
@@ -378,6 +403,7 @@ public class CustomTableView extends RelativeLayout {
 
 
     public void addRow(String[] cellValues) {
+
         List<Cell> cellList = new ArrayList<>();
 
         cellList.add(new Cell(String.valueOf(tableData.size() + (hasHeader ? 0 : 1))));
@@ -392,16 +418,24 @@ public class CustomTableView extends RelativeLayout {
         updateRowNumbers(); // Ensure numbers are correctly set
         tableAdapter.setData(tableData);
         tableAdapter.notifyItemInserted(tableData.size() - 1);
+        logTableState("After adding row");
+
     }
 
     public void removeRow(int position) {
         if (position >= 0 && position < tableData.size()) {
+            TableViewMemento beforeState = saveToMemento();
+            undoStack.push(beforeState);
+            redoStack.clear();
+
             tableData.remove(position);
             tableAdapter.setData(tableData);
             tableAdapter.notifyItemRemoved(position);
             if (isNumberColumnVisible) {
                 updateRowNumbers();
             }
+            updateUndoRedoButtons();
+            logTableState("After removing row");
         }
     }
 
@@ -462,6 +496,8 @@ public class CustomTableView extends RelativeLayout {
 
     private void setupItemTouchHelper() {
         ItemTouchHelper.SimpleCallback callback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            private boolean isDragging = false;
+
             private int dragFrom = -1;
             private int dragTo = -1;
 
@@ -469,6 +505,7 @@ public class CustomTableView extends RelativeLayout {
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
                 int fromPosition = viewHolder.getAdapterPosition();
                 int toPosition = target.getAdapterPosition();
+
 
                 if (dragFrom == -1) {
                     dragFrom = fromPosition;
@@ -481,6 +518,7 @@ public class CustomTableView extends RelativeLayout {
 
                 Collections.swap(tableData, fromPosition, toPosition);
                 tableAdapter.notifyItemMoved(fromPosition, toPosition);
+
                 return true;
             }
             @Override
@@ -506,11 +544,16 @@ public class CustomTableView extends RelativeLayout {
                 }
 
                 dragFrom = dragTo = -1;
+                if (isDragging) {
+                    isDragging = false;
+                }
             }
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
                 int position = viewHolder.getAdapterPosition();
+
                 if (hasHeader && position == 0) {
                     // Prevent swiping the header
                     tableAdapter.notifyItemChanged(0);
@@ -570,7 +613,7 @@ public class CustomTableView extends RelativeLayout {
                 .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        deleteRow(position);
+                        removeRow(position);
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -583,7 +626,7 @@ public class CustomTableView extends RelativeLayout {
     }
 
     private void deleteRow(int position) {
-        tableData.remove(position);
+        tableData.remove(position+1);
         tableAdapter.notifyItemRemoved(position);
         updateRowNumbers();
     }
@@ -799,6 +842,75 @@ public class CustomTableView extends RelativeLayout {
     private boolean isValidPosition(int row, int column) {
         return row >= 0 && row < tableData.size() && column >= 0 && column < tableData.get(row).getCellCount();
     }
+    private void setupUndoRedoButtons() {
+        if (undoButton != null) {
+            undoButton.setOnClickListener(v -> {
+                undo();
+            });
+        }
+        if (redoButton != null) {
+            redoButton.setOnClickListener(v -> {
+                redo();
+            });
+        }
+        updateUndoRedoButtons();
+    }
+
+    private void undo() {
+        if (!undoStack.isEmpty()) {
+            TableViewMemento currentState = saveToMemento();
+            redoStack.push(currentState);
+
+            TableViewMemento previousState = undoStack.pop();
+            restoreFromMemento(previousState);
+
+            updateUndoRedoButtons();
+            tableAdapter.notifyDataSetChanged();
+            logTableState("After undo");
+        }
+    }
+    private void redo() {
+        if (!redoStack.isEmpty()) {
+            TableViewMemento currentState = saveToMemento();
+            undoStack.push(currentState);
+
+            TableViewMemento nextState = redoStack.pop();
+            restoreFromMemento(nextState);
+
+            updateUndoRedoButtons();
+            tableAdapter.notifyDataSetChanged();
+            logTableState("After redo");
+        }
+    }
+
+    private void logTableState(String action) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(action).append(" - Table state:\n");
+        sb.append("Rows: ").append(tableData.size()).append("\n");
+        sb.append("Columns: ").append(tableData.isEmpty() ? 0 : tableData.get(0).getCellCount()).append("\n");
+        sb.append("Has Header: ").append(hasHeader).append("\n");
+        sb.append("Number Column Visible: ").append(isNumberColumnVisible).append("\n");
+        sb.append("Row contents:\n");
+        for (int i = 0; i < Math.min(tableData.size(), 5); i++) {
+            Row row = tableData.get(i);
+            sb.append("Row ").append(i).append(": ");
+            for (int j = 0; j < Math.min(row.getCellCount(), 5); j++) {
+                sb.append(row.getCell(j).getText()).append(", ");
+            }
+            if (row.getCellCount() > 5) sb.append("...");
+            sb.append("\n");
+        }
+        if (tableData.size() > 5) sb.append("...\n");
+        Log.d(TAG, sb.toString());
+    }
+    private void updateUndoRedoButtons() {
+        if (undoButton != null) {
+            undoButton.setEnabled(!undoStack.isEmpty());  // Enable only if there's more than one state
+        }
+        if (redoButton != null) {
+            redoButton.setEnabled(!redoStack.isEmpty());
+        }
+      }
 
     public TableViewMemento saveToMemento() {
         return new TableViewMemento(deepCopyTableData(), hasHeader, isNumberColumnVisible);
@@ -813,6 +925,7 @@ public class CustomTableView extends RelativeLayout {
         tableAdapter.setHasHeader(this.hasHeader);
         tableAdapter.setNumberColumnVisible(this.isNumberColumnVisible);
 
+        updateRowNumbers();
         tableAdapter.notifyDataSetChanged();
     }
 

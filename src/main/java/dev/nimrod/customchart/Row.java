@@ -55,4 +55,12 @@ public class Row {
     public void setHighlighted(boolean highlighted) {
         this.highlighted = highlighted;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Row that = (Row) obj;
+        return cells.equals(that.cells) && highlighted == that.highlighted;
+    }
 }

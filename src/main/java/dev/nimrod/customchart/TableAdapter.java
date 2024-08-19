@@ -162,6 +162,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
     public void setData(List<Row> newRows) {
         this.rows = newRows;
         recalculateCellSizes();
+        notifyDataSetChanged();
     }
 
     public void setHasHeader(boolean hasHeader) {

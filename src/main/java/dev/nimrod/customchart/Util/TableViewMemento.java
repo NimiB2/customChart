@@ -25,4 +25,16 @@ public class TableViewMemento {
     public boolean isRowNumberingEnabled() {
         return isRowNumberingEnabled;
     }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        TableViewMemento that = (TableViewMemento) obj;
+        if (hasHeader != that.hasHeader || isRowNumberingEnabled != that.isRowNumberingEnabled) return false;
+        if (state.size() != that.state.size()) return false;
+        for (int i = 0; i < state.size(); i++) {
+            if (!state.get(i).equals(that.state.get(i))) return false;
+        }
+        return true;
+    }
 }
