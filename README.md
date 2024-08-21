@@ -1,113 +1,97 @@
-# Custom Table View Library
+# CustomTableView-Android
 
-Welcome to the Custom Table View Library for Android! This library allows you to create and manage customizable tables in your Android applications with ease. Below, you'll find detailed information on how to use this library, along with examples and images to showcase its features.
 
-## Features
+CustomTableView is an Android library designed to simplify the creation and management of dynamic table views. It provides a comprehensive set of features for handling rows, columns, cell styling, sorting, and filtering, making it ideal for displaying complex tabular data in Android applications.
 
-- **Customizable Rows and Columns**: Add, remove, and customize rows and columns easily.
-- **Row Numbering**: Enable or disable row numbering with a customizable header text.
-- **Cell Customization**: Change the background color, text color, text size, and text style of individual cells.
-- **Dynamic Headers**: Add and manage header rows with customizable styles.
-- **Responsive Design**: Automatically adjust column widths to fit the content.
+<img src="https://github.com/NimiB2/customChart/raw/main/assets/customtable.gif" width="288">
 
-## Installation
+## Setup
+Step 1. Add it in your root build.gradle at the end of repositories:
+```gradle
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
 
-To use this library, add the following dependency to your `build.gradle` file:
+Step 2. Add the dependency:
 
 ```gradle
 dependencies {
-    implementation 'com.example:customtableview:1.0.0'
+    implementation 'com.github.NimiB2:customChart:1.0.2'
 }
 ```
 
 ## Usage
 
-### Basic Setup
-
-First, add the `CustomTableView` to your layout XML file:
-
-```xml
-<dev.nimrod.customchart.CustomTableView
-    android:id="@+id/custom_table_view"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
-```
-
-### Initialize in Your Activity/Fragment
-
+###### Basic Table Setup:
 ```java
 CustomTableView customTableView = findViewById(R.id.custom_table_view);
-
-// Set table title
-customTableView.setTitle("Sample Table");
-
-// Add header row
-customTableView.addHeaderRow(new String[]{"Header 1", "Header 2", "Header 3", "Header 4"});
-
-// Add rows
-customTableView.addRow(new String[]{"Row 1, Col 1", "Row 1, Col 2", "Row 1, Col 3", "Row 1, Col 4"});
-customTableView.addRow(new String[]{"Row 2, Col 1", "Row 2, Col 2", "Row 2, Col 3", "Row 2, Col 4"});
-// Add more rows as needed
+customTableView.setTitle("My Table");
+customTableView.addRow(new String[]{"Cell 1", "Cell 2", "Cell 3"});
 ```
 
-### Customizing Cells
+###### Adding a Header:
+```java
+customTableView.setHasHeader(true);
+customTableView.addHeaderRow(new String[]{"Column 1", "Column 2", "Column 3"});
+```
+
+###### Customizing Cells:
+```java
+customTableView.setCellColor(1, 2, Color.YELLOW);
+customTableView.setCellTextColor(0, 1, Color.BLUE);
+customTableView.setCellTypeface(2, 0, Typeface.DEFAULT_BOLD);
+```
+
+###### Filtering:
+```java
+customTableView.filterRows("searchTerm");
+```
+
+## Advanced Features
+
+- **Undo/Redo**: Use `undoButton` and `redoButton` for state management.
+- **Swipe Actions**: Swipe left to highlight a row, swipe right to delete.
+- **Drag and Drop**: Long press and drag to reorder rows.
+- **Dynamic Columns**: Add or remove columns dynamically.
+
+## Customization
+
+Customize the appearance of your table by modifying the XML layouts and drawables provided in the library.
 
 ```java
-// Change cell background color
-customTableView.setCellColor(1, 2, Color.RED);
-
-// Change cell text color
-customTableView.setCellTextColor(1, 2, Color.WHITE);
-
-// Change cell text size
-customTableView.setCellTextSize(1, 2, 20);
-
-// Change cell text style
-customTableView.setCellTextStyle(1, 2, Typeface.BOLD);
+customTableView.setColumnColor(1, Color.LTGRAY);
+customTableView.setRowColor(2, Color.CYAN);
+customTableView.setNumberingHeaderText("No.");
 ```
 
+## What's New
+1.0.2:
+1. Initial release with core functionality
+2. Support for cell customization
+3. Implemented undo/redo functionality
+4. Added filtering capabilities
+5. Introduced swipe and drag-drop actions
 
-### Advanced Features
+## License
 
-```java
-// Enable row numbering
-customTableView.enableRowNumbering();
+    Copyright 2024 Nimrod Bar
 
-// Change table title
-customTableView.setTitle("Advanced Table");
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-// Add a new header row
-customTableView.addHeaderRow(new String[]{"New Header 1", "New Header 2", "New Header 3", "New Header 4"});
+       http://www.apache.org/licenses/LICENSE-2.0
 
-// Add a new row
-customTableView.addRow(new String[]{"New Row 1, Col 1", "New Row 1, Col 2", "New Row 1, Col 3", "New Row 1, Col 4"});
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 
-// Add a new column with header
-customTableView.addColumnWithHeader(new String[]{"Col 5", "Value 5", "Value 5", "Value 5", "Value 5", "Value 5", "Value 5"}, "Header 5");
-```
+## Credits
 
-## Example Screenshots
-
-### Regular Table
-A basic table with 6 rows and 4 columns.
-
-![צילום מסך 2024-07-13 123147](https://github.com/user-attachments/assets/e7ae6aec-f65e-47ce-bb41-07ac6fe4222d)
-
-
-### Adding Colors and Sizes
-Customizing cell background colors, text colors, text style and text sizes.
-
-![צילום מסך 2024-07-13 123243](https://github.com/user-attachments/assets/4d53223d-c2d9-4b6c-93b0-43d0bc37cc17)
-
-
-### Advanced Table
-Changing the title, adding headers, a new row, a new column, and enabling numbering.
-
-
-![צילום מסך 2024-07-13 123407](https://github.com/user-attachments/assets/514bceed-6fb8-4b32-af85-266a3637beb3)
-
-
-## Contribution
-
-Contributions are welcome! Please submit pull requests or open issues to help improve the library.
-
+Icons used in the library:
+- Undo, Redo, and Menu icons: Material Design icons by Google
