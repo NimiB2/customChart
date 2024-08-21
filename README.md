@@ -3,10 +3,13 @@
 CustomTableView is an Android library designed to simplify the creation and management of dynamic table views. It provides a comprehensive set of features for handling rows, columns, cell styling, sorting, and filtering, making it ideal for displaying complex tabular data in Android applications.
 
 <p align="center">
-    <img src="https://github.com/user-attachments/assets/af4f120f-8ebc-4b7c-a1e6-fc798e3cd5eb" width="200" style="margin: 20px;">
-    <img src="https://github.com/user-attachments/assets/f80f7ecd-e137-459c-b277-e5587156cc73" width="200" style="margin: 20px;">
- 
+    <img src="https://github.com/user-attachments/assets/af4f120f-8ebc-4b7c-a1e6-fc798e3cd5eb" width="200" style="margin: 40px;">
+    <img src="https://github.com/user-attachments/assets/f80f7ecd-e137-459c-b277-e5587156cc73" width="200" style="margin: 40px;">
 </p>
+
+
+ <img src="https://github.com/user-attachments/assets/6218ab81-f9a0-4002-aeff-d43cdc4ba5f2" width="200" style="margin: 40px;">
+
 
 ## Setup
 Step 1. Add it in your root build.gradle at the end of repositories:
@@ -53,20 +56,15 @@ java
 customTableView.filterRows("searchTerm");
 
 
- <img src="https://github.com/user-attachments/assets/6218ab81-f9a0-4002-aeff-d43cdc4ba5f2" width="200" style="margin: 40px;">
-
-
 ## Advanced Features
 
 - **Undo/Redo**: Use undoButton and redoButton for state management.
 - **Swipe Actions**: Swipe left to highlight a row, swipe right to delete.
-  <p align="center">
     <img src="https://github.com/user-attachments/assets/ac13fec8-645b-4e81-bd17-9ae3c90b8f4b" width="200" style="margin: 20px;">
-</p>
+
 - **Drag and Drop**: Long press and drag to reorder rows.
-<p align="center">
+
     <img src="https://github.com/user-attachments/assets/81010c59-8b4b-4be8-946a-9d64c8c9692d" width="200" style="margin: 20px;">
-</p>
 - **Dynamic Columns**: Add or remove columns dynamically.
 
 ## Customization
