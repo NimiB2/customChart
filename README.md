@@ -4,9 +4,9 @@ CustomTableView is an Android library designed to simplify the creation and mana
 
 
 <p align="center">
-    <img src="https://github.com/user-attachments/assets/ac13fec8-645b-4e81-bd17-9ae3c90b8f4b" width="200" style="margin: 18px;">
-    <img src="https://github.com/user-attachments/assets/81010c59-8b4b-4be8-946a-9d64c8c9692d" width="200" style="margin: 20px;">
-    <img src="https://github.com/user-attachments/assets/6218ab81-f9a0-4002-aeff-d43cdc4ba5f2" width="200" style="margin: 20px;">
+![צילום מסך 2024-08-22 010241](https://github.com/user-attachments/assets/f6be69ad-e5da-4521-a09e-0f70381ff878)
+![צילום מסך 2024-08-22 012257](https://github.com/user-attachments/assets/175452e8-5a54-4408-8c9e-96f77e1de563)
+
 </p>
 
 
@@ -59,7 +59,14 @@ customTableView.filterRows("searchTerm");
 
 - **Undo/Redo**: Use undoButton and redoButton for state management.
 - **Swipe Actions**: Swipe left to highlight a row, swipe right to delete.
+  <p align="center">
+    <img src="https://github.com/user-attachments/assets/ac13fec8-645b-4e81-bd17-9ae3c90b8f4b" width="100" style="margin: 15px;">
+</p>
 - **Drag and Drop**: Long press and drag to reorder rows.
+<p align="center">
+    <img src="https://github.com/user-attachments/assets/81010c59-8b4b-4be8-946a-9d64c8c9692d" width="100" style="margin: 15px;">
+    <img src="https://github.com/user-attachments/assets/6218ab81-f9a0-4002-aeff-d43cdc4ba5f2" width="100" style="margin: 15px;">
+</p>
 - **Dynamic Columns**: Add or remove columns dynamically.
 
 ## Customization
