@@ -62,7 +62,9 @@ customTableView.filterRows("searchTerm");
 
 - **Undo/Redo**: Use undoButton and redoButton for state management.
 - **Swipe Actions**: Swipe left to highlight a row, swipe right to delete.
-    <img src="https://github.com/user-attachments/assets/ac13fec8-645b-4e81-bd17-9ae3c90b8f4b" width="200" style="margin: 20px;">
+
+
+  <img src="https://github.com/user-attachments/assets/ac13fec8-645b-4e81-bd17-9ae3c90b8f4b" width="200" style="margin: 20px;">
 
 - **Drag and Drop**: Long press and drag to reorder rows.
 
