@@ -43,7 +43,6 @@ import dev.nimrod.customchart.Util.TableViewMemento;
 public class CustomTableView extends RelativeLayout {
     private static final String TAG = "CustomTableView";
 
-
     private String numberingHeaderText = "NUMB";
     private boolean isNumberColumnVisible = true;
     private boolean hasHeader = false;
@@ -67,8 +66,9 @@ public class CustomTableView extends RelativeLayout {
     private boolean isHorizontalScrollingEnabled = false; // Initially disabled
     private boolean isSlidingEnabled = true; // Initially enabled
     private TableViewMemento initialState;
-
-
+    private boolean isFiltering = false;
+    private FloatingActionButton fabMain;
+    private ItemTouchHelper itemTouchHelper;
 
     public CustomTableView(Context context) {
         super(context);
@@ -101,6 +101,7 @@ public class CustomTableView extends RelativeLayout {
         tableData = new ArrayList<>();
         tableAdapter = new TableAdapter(context, new ArrayList<>());
         recyclerView.setAdapter(tableAdapter);
+        fabMain = findViewById(R.id.fab_main);
 
         undoButton = findViewById(R.id.undo_button);
         redoButton = findViewById(R.id.redo_button);
@@ -360,6 +361,9 @@ public class CustomTableView extends RelativeLayout {
 
     }
     private void clearFilter() {
+        isFiltering = false;
+        fabMain.setVisibility(VISIBLE);
+
         caretaker.restoreState(this); // Restore original state
         caretaker.clearMemento(); // Clear the saved state
         tableAdapter.setData(tableData);
@@ -383,6 +387,9 @@ public class CustomTableView extends RelativeLayout {
     private void filterRows(String query) {
         List<Row> filteredData = new ArrayList<>();
         String lowercaseQuery = query.toLowerCase();
+
+        isFiltering = true;
+        fabMain.setVisibility(GONE);
 
         for (Row row : tableData) {
             boolean rowContainsQuery = false;
@@ -507,7 +514,14 @@ public class CustomTableView extends RelativeLayout {
 
             private int dragFrom = -1;
             private int dragTo = -1;
-
+            @Override
+            public boolean isLongPressDragEnabled() {
+                return !isFiltering;
+            }
+            @Override
+            public boolean isItemViewSwipeEnabled() {
+                return !isFiltering;
+            }
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
                 int fromPosition = viewHolder.getAdapterPosition();
