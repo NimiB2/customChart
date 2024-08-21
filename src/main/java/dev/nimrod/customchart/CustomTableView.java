@@ -478,7 +478,12 @@ public class CustomTableView extends RelativeLayout {
             tableAdapter.updateCell(row, column, cell);
         }
     }
-
+    public String getCellText(int row, int column) {
+        if (isValidPosition(row, column)) {
+            return tableData.get(row).getCell(column).getText();
+        }
+        return "";
+    }
     public void setCellTypeface(int row, int column, Typeface typeface) {
         if (isValidPosition(row, column)) {
             Cell cell = tableData.get(row).getCell(column);
