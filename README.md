@@ -1,6 +1,10 @@
 # CustomTableView-Android
 
 
+
+https://github.com/user-attachments/assets/4a72720f-fa5b-417b-a129-854acbfe8ff7
+
+
 CustomTableView is an Android library designed to simplify the creation and management of dynamic table views. It provides a comprehensive set of features for handling rows, columns, cell styling, sorting, and filtering, making it ideal for displaying complex tabular data in Android applications.
 
 <img src="https://github.com/NimiB2/customChart/raw/main/assets/customtable.gif" width="288">
