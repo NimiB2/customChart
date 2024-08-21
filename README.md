@@ -1,26 +1,34 @@
 # CustomTableView-Android
-![צילום מסך 2024-08-22 012257](https://github.com/user-attachments/assets/4a6ed2ea-5367-4771-95e2-235ca6724591)
-![צילום מסך 2024-08-22 010241](https://github.com/user-attachments/assets/5bcb2bc4-f12b-447f-9e28-59ef1c70ac2a)
-
-
-
-
-https://github.com/user-attachments/assets/b23d02a5-7cf7-48a9-85fd-85ee81b47f39
-
-
-
-https://github.com/user-attachments/assets/427a0728-4e0b-4597-acd7-3fcfb7efcc63
-
-
-https://github.com/user-attachments/assets/4a72720f-fa5b-417b-a129-854acbfe8ff7
-
 
 CustomTableView is an Android library designed to simplify the creation and management of dynamic table views. It provides a comprehensive set of features for handling rows, columns, cell styling, sorting, and filtering, making it ideal for displaying complex tabular data in Android applications.
 
-<img src="https://github.com/NimiB2/customChart/raw/main/assets/customtable.gif" width="288">
+## Screenshots
+
+<p align="center">
+    <img src="https://github.com/user-attachments/assets/4a6ed2ea-5367-4771-95e2-235ca6724591" alt="Screenshot 1" width="45%" style="margin: 10px;">
+    <img src="https://github.com/user-attachments/assets/5bcb2bc4-f12b-447f-9e28-59ef1c70ac2a" alt="Screenshot 2" width="45%" style="margin: 10px;">
+</p>
+
+## Features in Action
+
+### Sorting & Filtering
+<p align="center">
+    <img src="https://github.com/user-attachments/assets/b23d02a5-7cf7-48a9-85fd-85ee81b47f39.gif" alt="Sorting & Filtering" width="75%" style="margin: 10px;">
+</p>
+
+### Swipe Actions
+<p align="center">
+    <img src="https://github.com/user-attachments/assets/427a0728-4e0b-4597-acd7-3fcfb7efcc63.gif" alt="Swipe Actions" width="75%" style="margin: 10px;">
+</p>
+
+### Drag & Drop
+<p align="center">
+    <img src="https://github.com/user-attachments/assets/4a72720f-fa5b-417b-a129-854acbfe8ff7.gif" alt="Drag & Drop" width="75%" style="margin: 10px;">
+</p>
 
 ## Setup
-Step 1. Add it in your root build.gradle at the end of repositories:
+
+### Step 1: Add it in your root `build.gradle` at the end of repositories:
 ```gradle
 allprojects {
     repositories {
