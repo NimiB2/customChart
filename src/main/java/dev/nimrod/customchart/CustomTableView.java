@@ -382,11 +382,15 @@ public class CustomTableView extends RelativeLayout {
 
     private void filterRows(String query) {
         List<Row> filteredData = new ArrayList<>();
+        String lowercaseQuery = query.toLowerCase();
+
         for (Row row : tableData) {
             boolean rowContainsQuery = false;
             for (int i = 0; i < row.getCellCount(); i++) {
                 Cell cell = row.getCell(i);
-                if (cell.getText().contains(query)) {
+                String cellText = cell.getText().toLowerCase();
+
+                if (cellText.contains(lowercaseQuery)) {
                     rowContainsQuery = true;
                     cell.setBackgroundColor(Color.YELLOW); // Highlight the matching cells in yellow
                 } else {
@@ -560,14 +564,8 @@ public class CustomTableView extends RelativeLayout {
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-
                 int position = viewHolder.getAdapterPosition();
 
-                if (hasHeader && position == 0) {
-                    // Prevent swiping the header
-                    tableAdapter.notifyItemChanged(0);
-                    return;
-                }
 
                 if (direction == ItemTouchHelper.RIGHT) {
                     showDeleteConfirmationDialog(position);
@@ -919,7 +917,7 @@ public class CustomTableView extends RelativeLayout {
         if (redoButton != null) {
             redoButton.setEnabled(!redoStack.isEmpty());
         }
-      }
+    }
 
     public TableViewMemento saveToMemento() {
         return new TableViewMemento(deepCopyTableData(), hasHeader, isNumberColumnVisible);
