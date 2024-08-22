@@ -49,7 +49,7 @@ Step 2. Add the dependency:
 
 ```gradle
 dependencies {
-    implementation 'com.github.NimiB2:customChart:1.0.2'
+    implementation(project(":customChart"))
 }
 ```
 
