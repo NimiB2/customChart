@@ -26,10 +26,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import dev.nimrod.customchart.utilites.TableConstants;
+
 public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowViewHolder> {
-    private static final int VERTICAL_PADDING = 16;
-    private static final int HORIZONTAL_PADDING = 16;
-    private static final int TEXT_WIDTH_PADDING = 20;
+    private static final String TAG = "TableAdapter";
+
     private List<Row> rows;
     private Context context;
     private boolean hasHeader;
@@ -37,12 +38,11 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
     private int[] maxColumnWidths;
     private int minCellHeight;
 
-//    private boolean sortableHeader = false;
     private OnHeaderClickListener headerClickListener;
 
     public TableAdapter(Context context, List<List<Cell>> data) {
         this.context = context;
-        this.minCellHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 68, context.getResources().getDisplayMetrics());
+        this.minCellHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, TableConstants.DEFAULT_MIN_CELL_HEIGHT, context.getResources().getDisplayMetrics());
 
         this.rows = new ArrayList<>();
         for (List<Cell> cellList : data) {
@@ -74,6 +74,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
 
     private void measureCells() {
         Paint paint = new Paint();
+
         int maxColumns = getMaxColumns();
         maxColumnWidths = new int[maxColumns];
 
@@ -87,20 +88,25 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
 
         for (int columnIndex = 0; columnIndex < row.getCellCount(); columnIndex++) {
             Cell cell = row.getCell(columnIndex);
-            paint.setTypeface(hasHeader && columnIndex == 0 ? Typeface.create(Typeface.DEFAULT, Typeface.BOLD) : cell.getTypeface());
+            if (hasHeader && columnIndex == 0) {
+                paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+            } else {
+                paint.setTypeface(cell.getTypeface());
+            }
             paint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, cell.getTextSize(), context.getResources().getDisplayMetrics()));
 
             Rect bounds = new Rect();
             paint.getTextBounds(cell.getText(), 0, cell.getText().length(), bounds);
 
-            int cellWidth = bounds.width() + 2 * HORIZONTAL_PADDING + TEXT_WIDTH_PADDING;
-            int cellHeight = Math.max(bounds.height() + 2 * VERTICAL_PADDING, minCellHeight);
+            int cellWidth = bounds.width() + 2 * TableConstants.HORIZONTAL_PADDING + TableConstants.TEXT_WIDTH_PADDING;
+            int cellHeight = Math.max(bounds.height() + 2 * TableConstants.VERTICAL_PADDING, minCellHeight);
 
             maxColumnWidths[columnIndex] = Math.max(maxColumnWidths[columnIndex], cellWidth);
             maxRowHeight = Math.max(maxRowHeight, cellHeight);
         }
 
         row.setHeight(maxRowHeight);
+        notifyDataSetChanged();
     }
 
     public void updateCell(int rowIndex, int columnIndex, Cell newCell) {
@@ -132,7 +138,6 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
     @NonNull
     @Override
     public TableRowViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
         View view = LayoutInflater.from(context).inflate(R.layout.table_row_item, parent, false);
         return new TableRowViewHolder(view);
     }
@@ -142,8 +147,6 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         Row row = rows.get(position);
         boolean isHeader = hasHeader && position == 0;
         holder.bind(row, isHeader, position, isNumberColumnVisible);
-        holder.itemView.setOnTouchListener(null); // Remove any existing touch listeners
-
     }
 
     @Override
@@ -161,12 +164,6 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         this.hasHeader = hasHeader;
     }
 
-
-    public void moveItem(int fromPosition, int toPosition) {
-        Collections.swap(rows, fromPosition, toPosition);
-        notifyItemMoved(fromPosition, toPosition);
-    }
-
     public class TableRowViewHolder extends RecyclerView.ViewHolder {
         private TableRow tableRow;
 
@@ -179,9 +176,9 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
             tableRow.removeAllViews();
             int rowHeight = row.getHeight();
             if (row.isHighlighted()) {
-                tableRow.setBackgroundColor(Color.YELLOW);
+                tableRow.setBackgroundColor(TableConstants.COLOR_YELLOW);
             } else {
-                tableRow.setBackgroundColor(Color.TRANSPARENT);
+                tableRow.setBackgroundColor(TableConstants.COLOR_TRANSPARENT);
             }
             for (int i = 0; i < row.getCellCount(); i++) {
                 if (i == 0 && !isNumberColumnVisible) {
@@ -195,12 +192,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
                 textView.setLayoutParams(params);
 
                 if (row.isHighlighted()) {
-                    Drawable originalBackground = textView.getBackground();
-                    LayerDrawable layerDrawable = new LayerDrawable(new Drawable[]{
-                            originalBackground,
-                            new ColorDrawable(Color.parseColor("#80FFFF00"))  // Semi-transparent yellow
-                    });
-                    textView.setBackground(layerDrawable);
+                    textView.setBackgroundColor(TableConstants.COLOR_YELLOW);
                 }
 
                 if (isHeader && hasHeader) {
@@ -222,7 +214,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
         private TextView createCellView(Cell cell, boolean isHeader, boolean isRowNumber) {
             TextView textView = new TextView(tableRow.getContext());
             textView.setText(cell.getText());
-            textView.setPadding(HORIZONTAL_PADDING, VERTICAL_PADDING, HORIZONTAL_PADDING, VERTICAL_PADDING);
+            textView.setPadding(TableConstants.HORIZONTAL_PADDING, TableConstants.VERTICAL_PADDING, TableConstants.HORIZONTAL_PADDING, TableConstants.VERTICAL_PADDING);
             textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, cell.getTextSize());
 
             textView.setBackground(cell.getBackgroundDrawable(context));

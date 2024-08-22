@@ -1,6 +1,9 @@
 package dev.nimrod.customchart.Util;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 import dev.nimrod.customchart.Row;
 
 public class TableViewMemento {
@@ -9,13 +12,13 @@ public class TableViewMemento {
     private final boolean isRowNumberingEnabled;
 
     public TableViewMemento(List<Row> state, boolean hasHeader, boolean isRowNumberingEnabled) {
-        this.state = state;
+        this.state = new ArrayList<>(state);
         this.hasHeader = hasHeader;
         this.isRowNumberingEnabled = isRowNumberingEnabled;
     }
 
     public List<Row> getState() {
-        return state;
+        return new ArrayList<>(state);
     }
 
     public boolean isHasHeader() {
@@ -25,6 +28,7 @@ public class TableViewMemento {
     public boolean isRowNumberingEnabled() {
         return isRowNumberingEnabled;
     }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -36,5 +40,10 @@ public class TableViewMemento {
             if (!state.get(i).equals(that.state.get(i))) return false;
         }
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(state, hasHeader, isRowNumberingEnabled);
     }
 }

@@ -24,4 +24,8 @@ public class TableViewCaretaker {
     public void clearMemento() {
         memento = null;
     }
+
+    public boolean hasSavedState() {
+        return memento != null;
+    }
 }

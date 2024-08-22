@@ -6,7 +6,6 @@ import android.view.MotionEvent;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class CustomRecyclerView extends RecyclerView {
-
     private boolean isHorizontalScrollingEnabled = false;
 
     public CustomRecyclerView(Context context) {
@@ -38,4 +37,3 @@ public class CustomRecyclerView extends RecyclerView {
         return isHorizontalScrollingEnabled;
     }
 }
-

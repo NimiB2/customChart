@@ -39,11 +39,12 @@ import java.util.Stack;
 
 import dev.nimrod.customchart.Util.TableViewCaretaker;
 import dev.nimrod.customchart.Util.TableViewMemento;
+import dev.nimrod.customchart.utilites.TableConstants;
 
 public class CustomTableView extends RelativeLayout {
     private static final String TAG = "CustomTableView";
 
-    private String numberingHeaderText = "NUMB";
+    private String numberingHeaderText = TableConstants.DEFAULT_NUMBERING_HEADER;
     private boolean isNumberColumnVisible = true;
     private boolean hasHeader = false;
     private AppCompatEditText filterText;
@@ -54,7 +55,6 @@ public class CustomTableView extends RelativeLayout {
     private Stack<TableViewMemento> redoStack;
     private FloatingActionButton undoButton;
     private FloatingActionButton redoButton;
-    //    private RecyclerView recyclerView;
     private TableAdapter tableAdapter;
     private List<Row> tableData;
     private MaterialTextView tableTitle;
@@ -63,12 +63,11 @@ public class CustomTableView extends RelativeLayout {
     private CustomRecyclerView recyclerView;
     private FloatingActionButton leftScrollButton;
     private FloatingActionButton rightScrollButton;
-    private boolean isHorizontalScrollingEnabled = false; // Initially disabled
-    private boolean isSlidingEnabled = true; // Initially enabled
-    private TableViewMemento initialState;
+    private boolean isHorizontalScrollingEnabled = false;
+    private boolean isSlidingEnabled = true;
     private boolean isFiltering = false;
     private FloatingActionButton fabMain;
-//    private ItemTouchHelper itemTouchHelper;
+    private ItemTouchHelper itemTouchHelper;
 
     public CustomTableView(Context context) {
         super(context);
@@ -97,22 +96,22 @@ public class CustomTableView extends RelativeLayout {
         filterButton = findViewById(R.id.table_btn_filter);
         clearFilterButton = findViewById(R.id.table_btn_clear_filter);
         tableTitle = findViewById(R.id.table_text_title);
+        caretaker = new TableViewCaretaker();
+        tableData = new ArrayList<>();
+        tableAdapter = new TableAdapter(context, new ArrayList<>());
+        recyclerView.setAdapter(tableAdapter);
         fabMain = findViewById(R.id.table_fab_main);
 
         undoButton = findViewById(R.id.table_fab_undo);
         redoButton = findViewById(R.id.table_fab_redo);
 
-        caretaker = new TableViewCaretaker();
-        tableData = new ArrayList<>();
-        tableAdapter = new TableAdapter(context, new ArrayList<>());
-        recyclerView.setAdapter(tableAdapter);
-
-        // Set up RecyclerView with vertical scrolling
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(tableAdapter);
 
         undoStack = new Stack<>();
         redoStack = new Stack<>();
+        caretaker = new TableViewCaretaker();
 
         setupUndoRedoButtons();
         setupHorizontalScrollButtons(horizontalScrollView);
@@ -436,7 +435,6 @@ public class CustomTableView extends RelativeLayout {
             tableAdapter.updateCell(row, column, cell);
         }
     }
-
     public void setCellTextColor(int row, int column, int color) {
         if (isValidPosition(row, column)) {
             Cell cell = tableData.get(row).getCell(column);
@@ -444,6 +442,7 @@ public class CustomTableView extends RelativeLayout {
             tableAdapter.updateCell(row, column, cell);
         }
     }
+
     public String getCellText(int row, int column) {
         if (isValidPosition(row, column)) {
             return tableData.get(row).getCell(column).getText();
@@ -457,6 +456,7 @@ public class CustomTableView extends RelativeLayout {
             tableAdapter.updateCell(row, column, cell);
         }
     }
+
     private void setCellColorHelper(int row, int column, int color) {
         if (isValidPosition(row, column)) {
             Cell cell = tableData.get(row).getCell(column);
@@ -469,17 +469,22 @@ public class CustomTableView extends RelativeLayout {
         if (row >= 0 && row < tableData.size()) {
             Row currentRow = tableData.get(row);
             for (int i = 0; i < currentRow.getCellCount(); i++) {
-                setCellColorHelper(row, i, color);
+                Cell cell = currentRow.getCell(i);
+                cell.setBackgroundColor(color);
+                tableAdapter.updateCell(row, i, cell);
             }
         }
     }
 
     public void setColumnColor(int column, int color) {
         for (int i = 0; i < tableData.size(); i++) {
-            setCellColorHelper(i, column, color);
+            if (isValidPosition(i, column)) {
+                Cell cell = tableData.get(i).getCell(column);
+                cell.setBackgroundColor(color);
+                tableAdapter.updateCell(i, column, cell);
+            }
         }
     }
-
     private void setupItemTouchHelper() {
         ItemTouchHelper.SimpleCallback callback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             private boolean isDragging = false;
@@ -618,20 +623,22 @@ public class CustomTableView extends RelativeLayout {
                 .show();
     }
 
-    private void deleteRow(int position) {
-        tableData.remove(position+1);
-        tableAdapter.notifyItemRemoved(position);
-        updateRowNumbers();
-    }
-    private void highlightRow(int position) {
-        Row row = tableData.get(position);
-        boolean isCurrentlyHighlighted = row.isHighlighted();
-        row.setHighlighted(!isCurrentlyHighlighted);
-        tableAdapter.notifyItemChanged(position);
-    }
+//    private void deleteRow(int position) {
+//        tableData.remove(position+1);
+//        tableAdapter.notifyItemRemoved(position);
+//        updateRowNumbers();
+//    }
+private void highlightRow(int position) {
+    Row row = tableData.get(position);
+    boolean isCurrentlyHighlighted = row.isHighlighted();
+    row.setHighlighted(!isCurrentlyHighlighted);
+    tableAdapter.notifyItemChanged(position);
+}
+
     private void showToast(String message) {
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
+
     public void showNumberColumn() {
         if (!isNumberColumnVisible) {
             isNumberColumnVisible = true;
@@ -662,6 +669,7 @@ public class CustomTableView extends RelativeLayout {
         tableAdapter.setNumberColumnVisible(isNumberColumnVisible);
         tableAdapter.notifyDataSetChanged();
     }
+
 
     public void setCellText(int row, int column, String text) {
         if (isValidPosition(row, column)) {
@@ -822,6 +830,7 @@ public class CustomTableView extends RelativeLayout {
     private boolean isValidPosition(int row, int column) {
         return (row > 0 || (row == 0 && hasHeader)) && row < tableData.size() && column >= 0 && column < tableData.get(row).getCellCount();
     }
+
     private void setupUndoRedoButtons() {
         if (undoButton != null) {
             undoButton.setOnClickListener(v -> {

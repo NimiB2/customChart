@@ -11,39 +11,49 @@ import androidx.core.content.ContextCompat;
 
 import java.util.Objects;
 
+import dev.nimrod.customchart.utilites.TableConstants;
+
 public class Cell {
     private String text;
-    private int backgroundColor = Color.TRANSPARENT;
-    private int textColor = Color.BLACK;
-    private float textSize = 20f;
-    private Typeface typeface = Typeface.DEFAULT;
-    private int borderDrawableResId = R.drawable.cell_border;
-
+    private int backgroundColor;
+    private int textColor;
+    private float textSize;
+    private Typeface typeface;
+    private int borderDrawableResId;
 
     public Cell(String text) {
         this.text = text;
+        this.backgroundColor = TableConstants.COLOR_TRANSPARENT;
+        this.textColor = TableConstants.COLOR_BLACK;
+        this.textSize = TableConstants.DEFAULT_TEXT_SIZE;
+        this.typeface = Typeface.DEFAULT;
+        this.borderDrawableResId = R.drawable.cell_border;
     }
 
     // Getters and setters
     public String getText() { return text; }
     public void setText(String text) { this.text = text; }
+
     public int getBackgroundColor() { return backgroundColor; }
     public void setBackgroundColor(int backgroundColor) { this.backgroundColor = backgroundColor; }
+
     public Drawable getBackgroundDrawable(Context context) {
         Drawable borderDrawable = ContextCompat.getDrawable(context, borderDrawableResId).mutate();
         GradientDrawable backgroundDrawable = new GradientDrawable();
         backgroundDrawable.setColor(backgroundColor);
         return new LayerDrawable(new Drawable[]{backgroundDrawable, borderDrawable});
     }
+
     public int getTextColor() { return textColor; }
     public void setTextColor(int textColor) { this.textColor = textColor; }
+
     public float getTextSize() { return textSize; }
     public void setTextSize(float textSize) { this.textSize = textSize; }
+
     public Typeface getTypeface() { return typeface; }
     public void setTypeface(Typeface typeface) { this.typeface = typeface; }
-    public int getBorderDrawableResId() {
-        return borderDrawableResId;
-    }
+
+    public int getBorderDrawableResId() { return borderDrawableResId; }
     public Cell setBorderDrawableResId(int borderDrawableResId) {
         this.borderDrawableResId = borderDrawableResId;
         return this;
