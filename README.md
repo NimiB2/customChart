@@ -15,15 +15,11 @@ CustomTableView is an Android library designed to simplify the creation and mana
 <br>
 
 - **Swipe Actions**: Swipe left to highlight a row, swipe right to delete.
+- **Undo/Redo**: Use `undoButton` and `redoButton` for state management.
   
   <img src="https://github.com/user-attachments/assets/ac13fec8-645b-4e81-bd17-9ae3c90b8f4b" width="200" alt="Swiping GIF">
 
 <br>
-
-- **Undo/Redo**: Use `undoButton` and `redoButton` for state management.
-
-<br>
-
 
 - **Sorting**: Easily sort rows by clicking on column headers.
 
