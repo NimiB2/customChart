@@ -9,16 +9,16 @@ CustomTableView is an Android library designed to simplify the creation and mana
     <img src="https://github.com/user-attachments/assets/81010c59-8b4b-4be8-946a-9d64c8c9692d" width="200" style="margin: 20px;">
     <img src="https://github.com/user-attachments/assets/6218ab81-f9a0-4002-aeff-d43cdc4ba5f2" width="200" style="margin: 20px;">
     <img src="https://github.com/user-attachments/assets/544cd49d-a967-4989-9c44-e36f6eb98b92" width="200" style="margin: 20px;">
-<table>
-  <tr>
-    <td style="vertical-align: top;">
-      <img src="https://github.com/user-attachments/assets/af4f120f-8ebc-4b7c-a1e6-fc798e3cd5eb" width="200" style="margin: 20px;">
-    </td>
-    <td style="vertical-align: top;">
-      <img src="https://github.com/user-attachments/assets/f80f7ecd-e137-459c-b277-e5587156cc73" width="70" style="margin: 20px;">
-    </td>
-  </tr>
-</table>
+<div style="display: flex; align-items: flex-start;">
+  <img src="https://github.com/user-attachments/assets/af4f120f-8ebc-4b7c-a1e6-fc798e3cd5eb" width="200" style="margin: 20px;">
+  <img src="https://github.com/user-attachments/assets/f80f7ecd-e137-459c-b277-e5587156cc73" width="70" style="margin: 20px;">
+</div>
+
+<div style="display: flex; align-items: flex-end;">
+  <img src="https://github.com/user-attachments/assets/af4f120f-8ebc-4b7c-a1e6-fc798e3cd5eb" width="200" style="margin: 20px;">
+  <img src="https://github.com/user-attachments/assets/f80f7ecd-e137-459c-b277-e5587156cc73" width="70" style="margin: 20px;">
+</div>
+
 
 
 
