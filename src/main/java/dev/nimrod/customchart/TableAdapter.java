@@ -74,7 +74,6 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
 
     private void measureCells() {
         Paint paint = new Paint();
-
         int maxColumns = getMaxColumns();
         maxColumnWidths = new int[maxColumns];
 
@@ -88,14 +87,8 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
 
         for (int columnIndex = 0; columnIndex < row.getCellCount(); columnIndex++) {
             Cell cell = row.getCell(columnIndex);
-            // Set the paint's typeface to bold if it's a header
-            if (hasHeader && columnIndex == 0) {
-                paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-            } else {
-                paint.setTypeface(cell.getTypeface());
-            }
+            paint.setTypeface(hasHeader && columnIndex == 0 ? Typeface.create(Typeface.DEFAULT, Typeface.BOLD) : cell.getTypeface());
             paint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, cell.getTextSize(), context.getResources().getDisplayMetrics()));
-
 
             Rect bounds = new Rect();
             paint.getTextBounds(cell.getText(), 0, cell.getText().length(), bounds);
@@ -104,11 +97,10 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
             int cellHeight = Math.max(bounds.height() + 2 * VERTICAL_PADDING, minCellHeight);
 
             maxColumnWidths[columnIndex] = Math.max(maxColumnWidths[columnIndex], cellWidth);
-            maxRowHeight = Math.max(maxRowHeight, cellHeight);  // Determine the max height for the row
+            maxRowHeight = Math.max(maxRowHeight, cellHeight);
         }
 
         row.setHeight(maxRowHeight);
-        notifyDataSetChanged();
     }
 
     public void updateCell(int rowIndex, int columnIndex, Cell newCell) {

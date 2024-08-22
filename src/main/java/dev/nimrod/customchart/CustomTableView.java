@@ -388,17 +388,17 @@ public class CustomTableView extends RelativeLayout {
 
     public void addRow(String[] cellValues) {
         List<Cell> cellList = new ArrayList<>();
-
         cellList.add(new Cell("")); // Placeholder for number column
 
         for (String value : cellValues) {
-            cellList.add(new Cell(value));
+            cellList.add(createCell(value, false));
         }
+
         Row newRow = new Row(cellList);
         tableData.add(newRow);
-        ensureTableCompleteness();
 
-        updateRowNumbers(); // This will set the correct numbers
+        ensureTableCompleteness();
+        updateRowNumbers();
         tableAdapter.setData(tableData);
         tableAdapter.notifyItemInserted(tableData.size() - 1);
     }
@@ -464,25 +464,26 @@ public class CustomTableView extends RelativeLayout {
             tableAdapter.updateCell(row, column, cell);
         }
     }
+    private void setCellColorHelper(int row, int column, int color) {
+        if (isValidPosition(row, column)) {
+            Cell cell = tableData.get(row).getCell(column);
+            cell.setBackgroundColor(color);
+            tableAdapter.updateCell(row, column, cell);
+        }
+    }
 
     public void setRowColor(int row, int color) {
         if (row >= 0 && row < tableData.size()) {
             Row currentRow = tableData.get(row);
             for (int i = 0; i < currentRow.getCellCount(); i++) {
-                Cell cell = currentRow.getCell(i);
-                cell.setBackgroundColor(color);
-                tableAdapter.updateCell(row, i, cell);
+                setCellColorHelper(row, i, color);
             }
         }
     }
 
     public void setColumnColor(int column, int color) {
         for (int i = 0; i < tableData.size(); i++) {
-            if (isValidPosition(i, column)) {
-                Cell cell = tableData.get(i).getCell(column);
-                cell.setBackgroundColor(color);
-                tableAdapter.updateCell(i, column, cell);
-            }
+            setCellColorHelper(i, column, color);
         }
     }
 
@@ -758,46 +759,33 @@ public class CustomTableView extends RelativeLayout {
         tableAdapter.notifyDataSetChanged();
     }
 
+    private Cell createCell(String value, boolean isHeader) {
+        Cell cell = new Cell(value);
+        if (isHeader) {
+            cell.setBorderDrawableResId(R.drawable.header_cell_border);
+            cell.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        }
+        return cell;
+    }
 
     public void addHeaderRow(String[] headerValues) {
         hasHeader = true;
         List<Cell> headerCells = new ArrayList<>();
 
-        Cell numberHeaderCell = new Cell(numberingHeaderText);
-        if (isNumberColumnVisible) {
-            numberHeaderCell.setBorderDrawableResId(R.drawable.header_cell_border);
-            numberHeaderCell.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-        }
+        Cell numberHeaderCell = createCell(numberingHeaderText, true);
         headerCells.add(numberHeaderCell);
 
-        // Add the header cells starting from column 1
         for (String value : headerValues) {
-            Cell headerCell = new Cell(value);
-            headerCell.setBorderDrawableResId(R.drawable.header_cell_border); // Use the header cell frame
-            headerCell.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD)); // Set bold font for header
-            headerCells.add(headerCell); // Add each header cell to the next column
+            headerCells.add(createCell(value, true));
         }
 
-        // Add the constructed header row to the table data
         Row headerRow = new Row(headerCells);
         tableData.add(0, headerRow);
 
-        // Adjust the row below the header row to use regular cell borders
-        if (tableData.size() > 1) {
-            Row rowBelowHeader = tableData.get(1);
-            for (Cell cell : rowBelowHeader.getCells()) {
-                cell.setBorderDrawableResId(R.drawable.cell_border); // Set regular cell border
-                cell.setTypeface(Typeface.DEFAULT); // Set regular font
-            }
-        }
-
-        updateRowNumbers();
-        // Ensure that all other rows also have the correct number of cells
         ensureTableCompleteness();
-
+        updateRowNumbers();
         tableAdapter.setData(tableData);
         tableAdapter.notifyItemInserted(0);
-        tableAdapter.notifyItemChanged(1); // Refresh the row below the header
     }
 
 
