@@ -68,7 +68,7 @@ public class CustomTableView extends RelativeLayout {
     private TableViewMemento initialState;
     private boolean isFiltering = false;
     private FloatingActionButton fabMain;
-    private ItemTouchHelper itemTouchHelper;
+//    private ItemTouchHelper itemTouchHelper;
 
     public CustomTableView(Context context) {
         super(context);
@@ -260,33 +260,6 @@ public class CustomTableView extends RelativeLayout {
     private void setupHorizontalScrollButtons(CustomHorizontalScrollView horizontalScrollView) {
         leftScrollButton.setOnClickListener(v -> horizontalScrollView.smoothScrollBy(-500, 0)); // Scroll left
         rightScrollButton.setOnClickListener(v -> horizontalScrollView.smoothScrollBy(500, 0)); // Scroll right
-    }
-
-    private void scrollHorizontally(int dx) {
-        for (int i = 0; i < recyclerView.getChildCount(); i++) {
-            View child = recyclerView.getChildAt(i);
-            if (child instanceof HorizontalScrollView) {
-                ((HorizontalScrollView) child).smoothScrollBy(dx, 0);
-            }
-        }
-    }
-
-
-    private void enableHorizontalScrolling() {
-        recyclerView.setHorizontalScrollingEnabled(true);
-        isSlidingEnabled = false;
-    }
-
-    private void disableHorizontalScrolling() {
-        recyclerView.setHorizontalScrollingEnabled(false);
-        isSlidingEnabled = true;
-    }
-
-    private void scrollRecyclerViewHorizontally(int dx) {
-        if (recyclerView.isHorizontalScrollingEnabled()) {
-            recyclerView.scrollBy(dx, 0);
-        }
-        disableHorizontalScrolling(); // Disable scrolling after the move
     }
 
 

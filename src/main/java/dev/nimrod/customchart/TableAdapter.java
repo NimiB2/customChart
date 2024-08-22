@@ -37,7 +37,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
     private int[] maxColumnWidths;
     private int minCellHeight;
 
-    private boolean sortableHeader = false;
+//    private boolean sortableHeader = false;
     private OnHeaderClickListener headerClickListener;
 
     public TableAdapter(Context context, List<List<Cell>> data) {
