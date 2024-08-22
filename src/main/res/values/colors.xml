@@ -3,4 +3,14 @@
     <color name="divider_color">#FF000000</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="header_background">#E0E0E0</color>
+    <color name="alternate_row_background">#F5F5F5</color>
+    <color name="highlighted_column">#E6F3FF</color>
+    <color name="in_stock_green">#90EE90</color>
+    <color name="limited_stock_gold">#FFD700</color>
+    <color name="out_of_stock_salmon">#FFA07A</color>
+    <color name="rating_background">#FFFAF0</color>
+    <color name="rating_star_color">#FFD700</color>
+    <color name="high_price_blue">#4169E1</color>
+    <color name="low_price_red">#FF0000</color>
 </resources>

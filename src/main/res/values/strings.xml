@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">CustomChart</string>
     <string name="table_title">TITLE</string>
+    <string name="filter_hint">Filter text</string>
+    <string name="filter_button_text">Filter</string>
+    <string name="clear_filter_button_text">Clear Filter</string>
+    <string name="add_row_text">Add Row</string>
+    <string name="remove_row_text">Remove Row</string>
+    <string name="add_column_text">Add Column</string>
+    <string name="remove_column_text">Remove Column</string>
+    <string name="toggle_title_text">Toggle Title</string>
+    <string name="toggle_numbering_text">Toggle Numbering</string>
+    <string name="toggle_header_text">Toggle Header</string>
 </resources>

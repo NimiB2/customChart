@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/menu_add_row"
-        android:title="Add Row" />
+        android:id="@+id/table_menu_add_row"
+        android:title="@string/add_row_text" />
     <item
-        android:id="@+id/menu_remove_row"
-        android:title="Remove Row" />
+        android:id="@+id/table_menu_remove_row"
+        android:title="@string/remove_row_text" />
     <item
-        android:id="@+id/menu_add_column"
-        android:title="Add Column" />
+        android:id="@+id/table_menu_add_column"
+        android:title="@string/add_column_text" />
     <item
-        android:id="@+id/menu_remove_column"
-        android:title="Remove Column" />
+        android:id="@+id/table_menu_remove_column"
+        android:title="@string/remove_column_text" />
     <item
-        android:id="@+id/menu_toggle_title"
-        android:title="Toggle Title" />
+        android:id="@+id/table_menu_toggle_title"
+        android:title="@string/toggle_title_text" />
     <item
-        android:id="@+id/menu_toggle_numbering"
-        android:title="Toggle Numbering" />
-
+        android:id="@+id/table_menu_toggle_numbering"
+        android:title="@string/toggle_numbering_text" />
     <item
-        android:id="@+id/menu_toggle_header"
-        android:title="Toggle Header" />
+        android:id="@+id/table_menu_toggle_header"
+        android:title="@string/toggle_header_text" />
 </menu>

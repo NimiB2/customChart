@@ -172,7 +172,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableRowView
 
         public TableRowViewHolder(@NonNull View itemView) {
             super(itemView);
-            tableRow = itemView.findViewById(R.id.table_row);
+            tableRow = itemView.findViewById(R.id.table_row_item);
         }
 
         public void bind(Row row, boolean isHeader, int rowPosition, boolean isNumberColumnVisible) {

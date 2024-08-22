@@ -88,49 +88,42 @@ public class CustomTableView extends RelativeLayout {
     private void init(Context context) {
         LayoutInflater.from(context).inflate(R.layout.custom_table_view, this, true);
 
-        recyclerView = findViewById(R.id.recycler_view);
-        leftScrollButton = findViewById(R.id.left_scroll_button);
-        rightScrollButton = findViewById(R.id.right_scroll_button);
-        CustomHorizontalScrollView horizontalScrollView = findViewById(R.id.horizontal_scroll_view);
+        recyclerView = findViewById(R.id.table_recycler_view);
+        leftScrollButton = findViewById(R.id.table_fab_scroll_left);
+        rightScrollButton = findViewById(R.id.table_fab_scroll_right);
+        CustomHorizontalScrollView horizontalScrollView = findViewById(R.id.table_scroll_horizontal);
 
-        filterText = findViewById(R.id.filter_text);
-        filterButton = findViewById(R.id.filter_button);
-        clearFilterButton = findViewById(R.id.clear_filter_button);
-        tableTitle = findViewById(R.id.table_title);
+        filterText = findViewById(R.id.table_edit_filter);
+        filterButton = findViewById(R.id.table_btn_filter);
+        clearFilterButton = findViewById(R.id.table_btn_clear_filter);
+        tableTitle = findViewById(R.id.table_text_title);
+        fabMain = findViewById(R.id.table_fab_main);
+
+        undoButton = findViewById(R.id.table_fab_undo);
+        redoButton = findViewById(R.id.table_fab_redo);
+
         caretaker = new TableViewCaretaker();
         tableData = new ArrayList<>();
         tableAdapter = new TableAdapter(context, new ArrayList<>());
         recyclerView.setAdapter(tableAdapter);
-        fabMain = findViewById(R.id.fab_main);
-
-        undoButton = findViewById(R.id.undo_button);
-        redoButton = findViewById(R.id.redo_button);
 
         // Set up RecyclerView with vertical scrolling
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);
         recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(tableAdapter);
 
         undoStack = new Stack<>();
         redoStack = new Stack<>();
-        caretaker = new TableViewCaretaker();
 
         setupUndoRedoButtons();
-
         setupHorizontalScrollButtons(horizontalScrollView);
-
-        setupFloatingActionButton(); // Add this line
-
+        setupFloatingActionButton();
         setupButtons();
         setupItemTouchHelper();
-
     }
 
     private void setupFloatingActionButton() {
-        FloatingActionButton fabMain = findViewById(R.id.fab_main);
         fabMain.setOnClickListener(v -> showPopupMenu(v));
     }
-
     private void showPopupMenu(View view) {
         PopupMenu popup = new PopupMenu(getContext(), view);
         popup.getMenuInflater().inflate(R.menu.custom_table_menu, popup.getMenu());
@@ -139,33 +132,33 @@ public class CustomTableView extends RelativeLayout {
             undoStack.push(beforeState);
 
             int itemId = item.getItemId();
-            if (itemId == R.id.menu_add_row) {
+            if (itemId == R.id.table_menu_add_row) {
                 showAddRowDialog();
                 return true;
-            } else if (itemId == R.id.menu_remove_row) {
+            } else if (itemId == R.id.table_menu_remove_row) {
                 showRemoveRowDialog();
                 return true;
-            } else if (itemId == R.id.menu_add_column) {
+            } else if (itemId == R.id.table_menu_add_column) {
                 showAddColumnDialog();
                 return true;
-            } else if (itemId == R.id.menu_remove_column) {
+            } else if (itemId == R.id.table_menu_remove_column) {
                 showRemoveColumnDialog();
                 return true;
-            } else if (itemId == R.id.menu_toggle_title) {
+            } else if (itemId == R.id.table_menu_toggle_title) {
                 if (tableTitle.getVisibility() == VISIBLE) {
                     hideTitle();
                 } else {
-                    setTitle("My Table Title");
+                    setTitle(getContext().getString(R.string.table_title));
                 }
                 return true;
-            } else if (itemId == R.id.menu_toggle_numbering) {
+            } else if (itemId == R.id.table_menu_toggle_numbering) {
                 if (isNumberColumnVisible) {
                     hideNumberColumn();
                 } else {
                     showNumberColumn();
                 }
                 return true;
-            } else if (itemId == R.id.menu_toggle_header) {  // New option for header toggle
+            } else if (itemId == R.id.table_menu_toggle_header) {
                 toggleHeader();
                 return true;
             }
