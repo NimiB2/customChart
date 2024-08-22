@@ -13,12 +13,12 @@ CustomTableView is an Android library designed to simplify the creation and mana
 <br>
 - **Swipe Actions**: Swipe left to highlight a row, swipe right to delete.
   
+  
   <img src="https://github.com/user-attachments/assets/ac13fec8-645b-4e81-bd17-9ae3c90b8f4b" width="200" alt="Swiping GIF">
 
 <br>
 
 - **Drag and Drop**: Long press and drag to reorder rows.
-
 
   <img src="https://github.com/user-attachments/assets/81010c59-8b4b-4be8-946a-9d64c8c9692d" width="200" alt="Drag and Drop GIF">
 
@@ -33,6 +33,7 @@ CustomTableView is an Android library designed to simplify the creation and mana
 - **Filtering**: Quickly filter rows based on specific criteria.
 
   <img src="https://github.com/user-attachments/assets/544cd49d-a967-4989-9c44-e36f6eb98b92" width="200" alt="Filtering GIF">
+
 
 
 
