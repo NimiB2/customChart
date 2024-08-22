@@ -19,6 +19,7 @@ CustomTableView is an Android library designed to simplify the creation and mana
 
 - **Drag and Drop**: Long press and drag to reorder rows.
 
+
   <img src="https://github.com/user-attachments/assets/81010c59-8b4b-4be8-946a-9d64c8c9692d" width="200" alt="Drag and Drop GIF">
 
 <br>
