@@ -5,16 +5,16 @@ CustomTableView is an Android library designed to simplify the creation and mana
 
 
 <p align="center">
-    <img src="https://github.com/user-attachments/assets/ac13fec8-645b-4e81-bd17-9ae3c90b8f4b" width="200" height="150">
-    <img src="https://github.com/user-attachments/assets/81010c59-8b4b-4be8-946a-9d64c8c9692d" width="200" height="150">
-    <img src="https://github.com/user-attachments/assets/6218ab81-f9a0-4002-aeff-d43cdc4ba5f2" width="200" height="150">
-    <img src="https://github.com/user-attachments/assets/544cd49d-a967-4989-9c44-e36f6eb98b92" width="200" height="150">
+    <img src="https://github.com/user-attachments/assets/ac13fec8-645b-4e81-bd17-9ae3c90b8f4b" width="200" height="250">
+    <img src="https://github.com/user-attachments/assets/81010c59-8b4b-4be8-946a-9d64c8c9692d" width="200" height="250">
+    <img src="https://github.com/user-attachments/assets/6218ab81-f9a0-4002-aeff-d43cdc4ba5f2" width="200" height="250">
+    <img src="https://github.com/user-attachments/assets/544cd49d-a967-4989-9c44-e36f6eb98b92" width="200" height="250">
     
 </p>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/af4f120f-8ebc-4b7c-a1e6-fc798e3cd5eb" alt="Image 1" height="150">
-  <img src="https://github.com/user-attachments/assets/f80f7ecd-e137-459c-b277-e5587156cc73" alt="Image 2" height="150" style="vertical-align: top;">
+  <img src="https://github.com/user-attachments/assets/af4f120f-8ebc-4b7c-a1e6-fc798e3cd5eb" alt="Image 1" height="250">
+  <img src="https://github.com/user-attachments/assets/f80f7ecd-e137-459c-b277-e5587156cc73" alt="Image 2" height="250" style="vertical-align: top;">
 </p>
 
 
