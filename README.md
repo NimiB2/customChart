@@ -13,8 +13,8 @@ CustomTableView is an Android library designed to simplify the creation and mana
 </p>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/af4f120f-8ebc-4b7c-a1e6-fc798e3cd5eb" alt="Image 1" height="250">
-  <img src="https://github.com/user-attachments/assets/f80f7ecd-e137-459c-b277-e5587156cc73" alt="Image 2" height="250" style="vertical-align: top;">
+  <img src="https://github.com/user-attachments/assets/af4f120f-8ebc-4b7c-a1e6-fc798e3cd5eb" alt="Image 1" height="350">
+  <img src="https://github.com/user-attachments/assets/f80f7ecd-e137-459c-b277-e5587156cc73" alt="Image 2" height="150" style="vertical-align: top;">
 </p>
 
 
