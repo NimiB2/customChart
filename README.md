@@ -1,33 +1,33 @@
 # CustomTableView-Android
 CustomTableView is an Android library designed to simplify the creation and management of dynamic table views. It provides a comprehensive set of features for handling rows, columns, cell styling, sorting, and filtering, making it ideal for displaying complex tabular data in Android applications
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/af4f120f-8ebc-4b7c-a1e6-fc798e3cd5eb" alt="Table Overview" height="240">
-  <img src="https://github.com/user-attachments/assets/f80f7ecd-e137-459c-b277-e5587156cc73" alt="Menu Open" height="200" style="vertical-align: top;">
+  <img src="https://github.com/user-attachments/assets/af4f120f-8ebc-4b7c-a1e6-fc798e3cd5eb" alt="Table Overview" height="300">
+  <img src="https://github.com/user-attachments/assets/f80f7ecd-e137-459c-b277-e5587156cc73" alt="Menu Open" height="200" style="vertical-align: top; margin-left: 20px;">
 </p>
 
 ## Advanced Features
 
 - **Undo/Redo**: Use `undoButton` and `redoButton` for state management.
 
-  
+ <br> 
 - **Swipe Actions**: Swipe left to highlight a row, swipe right to delete.
 <img src="https://github.com/user-attachments/assets/ac13fec8-645b-4e81-bd17-9ae3c90b8f4b" width="200" alt="Swiping GIF">
 
 
 
-
+<br>
 - **Drag and Drop**: Long press and drag to reorder rows.
 <img src="https://github.com/user-attachments/assets/81010c59-8b4b-4be8-946a-9d64c8c9692d" width="200" alt="Drag and Drop GIF">
 
 
 
-
+<br>
 - **Sorting**: Easily sort rows by clicking on column headers.
 <img src="https://github.com/user-attachments/assets/6218ab81-f9a0-4002-aeff-d43cdc4ba5f2" width="200" alt="Sorting GIF">
 
 
 
-
+<br>
 - **Filtering**: Quickly filter rows based on specific criteria.
 <img src="https://github.com/user-attachments/assets/544cd49d-a967-4989-9c44-e36f6eb98b92" width="200" alt="Filtering GIF">
 
@@ -75,9 +75,13 @@ customTableView.setCellTextColor(0, 1, Color.BLUE);
 customTableView.setCellTypeface(2, 0, Typeface.DEFAULT_BOLD);
 ```
 
-###### Filtering:
+###### Dynamic Column Management:
 ```java
-customTableView.filterRows("searchTerm");
+// Add a new column
+customTableView.addColumn(new String[]{"New Column Header", "Value 1", "Value 2", "Value 3"});
+
+// Remove a column
+customTableView.removeColumn(2);  // Removes the third column (index 2)
 ```
 
 ## Customization
