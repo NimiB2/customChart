@@ -67,7 +67,6 @@ public class CustomTableView extends RelativeLayout {
     private boolean isSlidingEnabled = true;
     private boolean isFiltering = false;
     private FloatingActionButton fabMain;
-    private ItemTouchHelper itemTouchHelper;
 
     public CustomTableView(Context context) {
         super(context);
@@ -488,9 +487,9 @@ public class CustomTableView extends RelativeLayout {
     private void setupItemTouchHelper() {
         ItemTouchHelper.SimpleCallback callback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             private boolean isDragging = false;
-
             private int dragFrom = -1;
             private int dragTo = -1;
+            private int originalBackgroundColor;
             @Override
             public boolean isLongPressDragEnabled() {
                 return !isFiltering;
@@ -522,9 +521,10 @@ public class CustomTableView extends RelativeLayout {
             @Override
             public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
                 if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
-                    viewHolder.itemView.setElevation(8f); // Increase elevation when dragging starts
-                    viewHolder.itemView.setBackgroundResource(android.R.color.holo_green_light);
-
+                    viewHolder.itemView.setElevation(TableConstants.DRAG_ELEVATION);
+                    originalBackgroundColor = ((ColorDrawable) viewHolder.itemView.getBackground()).getColor();
+                    viewHolder.itemView.setBackgroundColor(TableConstants.DRAG_BACKGROUND_COLOR);
+                    isDragging = true;
                 }
                 super.onSelectedChanged(viewHolder, actionState);
             }
@@ -533,24 +533,22 @@ public class CustomTableView extends RelativeLayout {
             public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
                 super.clearView(recyclerView, viewHolder);
 
-                viewHolder.itemView.setElevation(0f); // Reset elevation when dragging ends
-                viewHolder.itemView.setBackgroundResource(android.R.color.transparent);
+                viewHolder.itemView.setElevation(0f);
+                viewHolder.itemView.setBackgroundColor(originalBackgroundColor);
+
                 if (hasHeader && (dragFrom == 0 || dragTo == 0)) {
-                    showToast("Cannot Swap Header");
+                    showToast(getContext().getString(R.string.cannot_swap_header));
                 } else if (dragFrom != -1 && dragTo != -1 && dragFrom != dragTo) {
                     updateRowNumbers();
                     if(!hasHeader){
-                        dragFrom ++;
-                        dragTo ++;
+                        dragFrom++;
+                        dragTo++;
                     }
-
-                    showToast("Rows swapped: " + (dragFrom) + " and " + (dragTo));
+                    showToast(getContext().getString(R.string.rows_swapped, dragFrom, dragTo));
                 }
 
                 dragFrom = dragTo = -1;
-                if (isDragging) {
-                    isDragging = false;
-                }
+                isDragging = false;
             }
 
             @Override

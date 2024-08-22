@@ -31,4 +31,9 @@ public class TableConstants {
     // Undo/Redo stack sizes
     public static final int MAX_UNDO_STACK_SIZE = 20;
     public static final int MAX_REDO_STACK_SIZE = 20;
+
+    // Drag and Drop constants
+    public static final float DRAG_ELEVATION = 8f;
+    public static final int DRAG_BACKGROUND_COLOR = Color.LTGRAY; // Light gray color for dragging
+
 }

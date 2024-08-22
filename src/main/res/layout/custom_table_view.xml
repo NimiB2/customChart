@@ -67,14 +67,14 @@
 
     <dev.nimrod.customchart.CustomHorizontalScrollView
         android:id="@+id/table_scroll_horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/table_width"
+        android:layout_height="@dimen/table_height"
         android:layout_centerInParent="true"
         android:layout_below="@id/table_text_title"
         android:scrollbars="horizontal">
 
         <androidx.appcompat.widget.LinearLayoutCompat
-            android:layout_width="@dimen/table_width"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="horizontal">
@@ -82,7 +82,7 @@
             <dev.nimrod.customchart.CustomRecyclerView
                 android:id="@+id/table_recycler_view"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/table_height"
+                android:layout_height="wrap_content"
                 android:scrollbars="vertical" />
         </androidx.appcompat.widget.LinearLayoutCompat>
     </dev.nimrod.customchart.CustomHorizontalScrollView>

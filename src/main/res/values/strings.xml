@@ -12,4 +12,7 @@
     <string name="toggle_title_text">Toggle Title</string>
     <string name="toggle_numbering_text">Toggle Numbering</string>
     <string name="toggle_header_text">Toggle Header</string>
+    <string name="cannot_swap_header">Cannot Swap Header</string>
+    <string name="rows_swapped">Rows swapped: %1$d and %2$d</string>
+
 </resources>

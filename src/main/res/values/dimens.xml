@@ -7,7 +7,7 @@
     <dimen name="title_padding">16dp</dimen>
     <dimen name="title_text_size">18sp</dimen>
     <dimen name="table_width">300dp</dimen>
-    <dimen name="table_height">500dp</dimen>
+    <dimen name="table_height">400dp</dimen>
     <dimen name="cell_horizontal_padding">16dp</dimen>
     <dimen name="cell_vertical_padding">16dp</dimen>
     <dimen name="cell_text_width_padding">20dp</dimen>
